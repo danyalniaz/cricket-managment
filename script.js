@@ -30,8 +30,8 @@ class CricketApp {
   }
 
   init() {
-    this.loadState();
-    if (!this.state.tournaments || this.state.tournaments.length === 0 || !this.state.teams || this.state.teams.length === 0) {
+    const hasLoaded = this.loadState();
+    if (!hasLoaded) {
       this.loadDemoData();
     }
 
@@ -66,10 +66,12 @@ class CricketApp {
           (loadedState.matches || []).forEach(m => { if (!m.tournamentId) m.tournamentId = tId; });
         }
         this.state = loadedState;
+        return true;
       }
     } catch (e) {
       console.error('Failed to load from localStorage:', e);
     }
+    return false;
   }
 
   loadDemoData() {
