@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Tournament Scorer & Management System</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- HTML2Canvas for Image Saving -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Sidebar Navigation -->
+    <sidebar id="sidebar">
+      <div class="brand-container">
+        <div class="brand-icon">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="brand-title">
+          CRICSCORER
+          <span>PRO MANAGEMENT</span>
+        </div>
+      </div>
+
+      <ul class="nav-links">
+        <li class="nav-item active" data-view="dashboard">
+          <a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        </li>
+        <li class="nav-item" data-view="live-scorer">
+          <a href="#"><i class="fa-solid fa-tower-broadcast"></i> Live Scoring</a>
+        </li>
+        <li class="nav-item" data-view="create-match">
+          <a href="#"><i class="fa-solid fa-calendar-plus"></i> Create Match</a>
+        </li>
+        <li class="nav-item" data-view="matches">
+          <a href="#"><i class="fa-solid fa-list-check"></i> Matches</a>
+        </li>
+        <li class="nav-item" data-view="teams">
+          <a href="#"><i class="fa-solid fa-people-group"></i> Teams</a>
+        </li>
+        <li class="nav-item" data-view="players">
+          <a href="#"><i class="fa-solid fa-user-ninja"></i> Players</a>
+        </li>
+        <li class="nav-item" data-view="points-table">
+          <a href="#"><i class="fa-solid fa-table-list"></i> Points Table</a>
+        </li>
+        <li class="nav-item" data-view="statistics">
+          <a href="#"><i class="fa-solid fa-chart-pie"></i> Statistics</a>
+        </li>
+        <li class="nav-item" data-view="records">
+          <a href="#"><i class="fa-solid fa-medal"></i> Records</a>
+        </li>
+        <li class="nav-item" data-view="knockout">
+          <a href="#"><i class="fa-solid fa-sitemap"></i> Bracket / Final</a>
+        </li>
+        <li class="nav-item" data-view="setup">
+          <a href="#"><i class="fa-solid fa-gears"></i> Tournament Setup</a>
+        </li>
+        <li class="nav-item" data-view="settings">
+          <a href="#"><i class="fa-solid fa-database"></i> Data & Admin</a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button id="load-demo-btn" class="demo-data-btn">
+          <i class="fa-solid fa-bolt"></i> Load Demo Data
+        </button>
+      </div>
+    </sidebar>
+
+    <!-- Main Workspace Area -->
+    <div class="main-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="top-navbar">
+        <div class="header-left">
+          <button id="mobile-nav-toggle" class="mobile-nav-toggle">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h2 id="current-page-title" class="page-heading">Dashboard</h2>
+        </div>
+
+        <div class="header-right">
+          <!-- Tournament Switcher & New Button -->
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <i class="fa-solid fa-trophy" style="color: var(--primary); font-size: 0.9rem;"></i>
+            <select id="active-tournament-select" class="form-control" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;" onchange="app.switchActiveTournament(this.value)">
+              <!-- Options populated dynamically -->
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="app.openNewTournamentModal()" title="Add New Tournament">
+              <i class="fa-solid fa-plus"></i> New
+            </button>
+          </div>
+
+          <div class="global-search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="global-search-input" placeholder="Search team, player, match...">
+          </div>
+          <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <main class="content-body">
+        
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="view-section active">
+          <!-- Tournament Banner Card -->
+          <div class="card" style="background: linear-gradient(135deg, #1e293b, #0b1120); border-color: var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <span class="badge badge-completed" id="dash-tourney-season">2026 Season</span>
+                <h1 id="dash-tourney-name" style="font-size: 1.8rem; font-weight: 900; margin-top: 0.3rem;">Pakistan Premier Cricket Cup 2026</h1>
+                <p id="dash-tourney-meta" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">
+                  <i class="fa-solid fa-location-dot"></i> <span id="dash-location">Gaddafi Stadium, Lahore</span> | 
+                  <i class="fa-solid fa-trophy"></i> Format: <span id="dash-format">League + Knockout</span>
+                </p>
+              </div>
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="app.switchView('live-scorer')">
+                  <i class="fa-solid fa-circle-dot"></i> Live Scorer
+                </button>
+                <button class="btn btn-secondary" onclick="app.switchView('create-match')">
+                  <i class="fa-solid fa-plus"></i> New Match
+                </button>
+                <button class="btn btn-accent" onclick="app.openNewTournamentModal()">
+                  <i class="fa-solid fa-trophy"></i> Add Tournament
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="quick-actions-grid">
+            <div class="quick-action-btn" onclick="app.openNewTournamentModal()">
+              <i class="fa-solid fa-trophy"></i>
+              <span>Add Tournament</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('create-match')">
+              <i class="fa-solid fa-calendar-plus"></i>
+              <span>Create Match</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('live-scorer')">
+              <i class="fa-solid fa-tower-broadcast"></i>
+              <span>Live Scoring</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('teams')">
+              <i class="fa-solid fa-people-group"></i>
+              <span>Teams</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.openQuickPlayerModal()">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>+ Add Player</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('points-table')">
+              <i class="fa-solid fa-table-list"></i>
+              <span>Points Table</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('statistics')">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Statistics</span>
+            </div>
+            <div class="quick-action-btn" onclick="app.switchView('matches')">
+              <i class="fa-solid fa-list-check"></i>
+              <span>Match History</span>
+            </div>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-people-group"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-teams" class="stat-value">0</div>
+                <div class="stat-label">Total Teams</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fa-solid fa-baseball"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-matches" class="stat-value">0</div>
+                <div class="stat-label">Total Matches</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon warning"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <div id="stat-completed-matches" class="stat-value">0</div>
+                <div class="stat-label">Completed</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fa-solid fa-calendar-day"></i></div>
+              <div class="stat-info">
+                <div id="stat-upcoming-matches" class="stat-value">0</div>
+                <div class="stat-label">Upcoming</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-person-running"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-runs" class="stat-value">0</div>
+                <div class="stat-label">Total Runs</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fa-solid fa-bowling-ball"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-wickets" class="stat-value">0</div>
+                <div class="stat-label">Total Wickets</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon warning"><i class="fa-solid fa-explosion"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-sixes" class="stat-value">0</div>
+                <div class="stat-label">Total Sixes</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fa-solid fa-bolt"></i></div>
+              <div class="stat-info">
+                <div id="stat-total-fours" class="stat-value">0</div>
+                <div class="stat-label">Total Fours</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tournament Leaders Summary -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-award"></i> Tournament Performers & Leaders</div>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card" style="border-color: var(--primary);">
+                <div class="stat-icon"><i class="fa-solid fa-fire"></i></div>
+                <div class="stat-info">
+                  <div id="leader-top-scorer" class="stat-value" style="font-size: 1.1rem;">-</div>
+                  <div class="stat-label">Top Run Scorer</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-color: var(--accent);">
+                <div class="stat-icon blue"><i class="fa-solid fa-bullseye"></i></div>
+                <div class="stat-info">
+                  <div id="leader-top-bowler" class="stat-value" style="font-size: 1.1rem;">-</div>
+                  <div class="stat-label">Top Wicket Taker</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-color: var(--warning);">
+                <div class="stat-icon warning"><i class="fa-solid fa-star"></i></div>
+                <div class="stat-info">
+                  <div id="leader-pot" class="stat-value" style="font-size: 1.1rem;">-</div>
+                  <div class="stat-label">Player of Tournament</div>
+                </div>
+              </div>
+              <div class="stat-card" style="border-color: var(--purple);">
+                <div class="stat-icon purple"><i class="fa-solid fa-bolt-lightning"></i></div>
+                <div class="stat-info">
+                  <div id="leader-most-sixes" class="stat-value" style="font-size: 1.1rem;">-</div>
+                  <div class="stat-label">Most Sixes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active / Recent Match Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Matches Summary</div>
+              <button class="btn btn-secondary btn-sm" onclick="app.switchView('matches')">View All Matches</button>
+            </div>
+            <div id="dashboard-matches-container">
+              <!-- Dynamically populated matches list -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. LIVE SCORER VIEW -->
+        <section id="view-live-scorer" class="view-section">
+          <!-- Active Match Select Bar if multiple live -->
+          <div id="no-active-match-banner" class="card" style="text-align: center; padding: 3rem 1.5rem;">
+            <i class="fa-solid fa-tower-broadcast" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3>No Match Currently Being Scored</h3>
+            <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem 0;">Create a new match or select an upcoming match to start live scoring.</p>
+            <button class="btn btn-primary" onclick="app.switchView('create-match')">
+              <i class="fa-solid fa-plus"></i> Create Match & Start Scoring
+            </button>
+          </div>
+
+          <div id="live-scorer-container" style="display: none;">
+            <!-- Live Match Header -->
+            <div class="live-match-header">
+              <div class="live-header-top">
+                <span id="live-match-meta" class="match-title-tag">MATCH #1 • GADDAFI STADIUM</span>
+                <div class="no-print-capture" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <button class="btn btn-accent btn-sm" onclick="app.downloadLiveScoreImage()"><i class="fa-solid fa-image"></i> Save Graphic</button>
+                  <button class="btn btn-secondary btn-sm" onclick="app.openOpenersModal()"><i class="fa-solid fa-sliders"></i> Select / Change Batters</button>
+                  <button class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModal()"><i class="fa-solid fa-user-plus"></i> + Add Player</button>
+                  <span class="badge badge-live"><i class="fa-solid fa-circle"></i> LIVE</span>
+                </div>
+              </div>
+
+              <div class="live-teams-score">
+                <div class="team-score-box">
+                  <div class="team-flag" id="live-batting-flag">A</div>
+                  <div class="team-score-info">
+                    <div class="team-name" id="live-batting-team-name">Islamabad Warriors</div>
+                    <div class="team-runs"><span id="live-runs">0</span>/<span id="live-wickets">0</span></div>
+                    <div class="team-overs">(<span id="live-overs">0.0</span> / <span id="live-max-overs">20</span> Overs)</div>
+                  </div>
+                </div>
+
+                <div class="versus-badge">VS</div>
+
+                <div class="team-score-box" style="flex-direction: row-reverse; text-align: right;">
+                  <div class="team-flag" id="live-bowling-flag">B</div>
+                  <div class="team-score-info">
+                    <div class="team-name" id="live-bowling-team-name">Lahore Lions</div>
+                    <div class="team-runs" id="live-target-display" style="font-size: 1.4rem; color: var(--text-muted);">-</div>
+                    <div class="team-overs" id="live-target-subtext">Bowling</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="live-match-metrics">
+                <div class="metric-item">
+                  <span class="label">Current RR</span>
+                  <span class="val" id="live-crr">0.00</span>
+                </div>
+                <div class="metric-item">
+                  <span class="label">Req. RR</span>
+                  <span class="val" id="live-rrr">-</span>
+                </div>
+                <div class="metric-item">
+                  <span class="label">Runs Needed</span>
+                  <span class="val" id="live-runs-needed">-</span>
+                </div>
+                <div class="metric-item">
+                  <span class="label">Balls Left</span>
+                  <span class="val" id="live-balls-left">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Live Scorer Grid Layout -->
+            <div class="scorer-layout">
+              <!-- Left Column: Touch Keypad & Active Tables -->
+              <div>
+                <!-- Touch Scoring Keypad -->
+                <div class="keypad-card">
+                  <div class="keypad-section-label">RUNS SCORED</div>
+                  <div class="runs-grid">
+                    <button class="run-btn" onclick="app.recordBall(0)">0</button>
+                    <button class="run-btn" onclick="app.recordBall(1)">1</button>
+                    <button class="run-btn" onclick="app.recordBall(2)">2</button>
+                    <button class="run-btn" onclick="app.recordBall(3)">3</button>
+                    <button class="run-btn four" onclick="app.recordBall(4)">4</button>
+                    <button class="run-btn" onclick="app.recordBall(5)">5</button>
+                    <button class="run-btn six" onclick="app.recordBall(6)">6</button>
+                  </div>
+
+                  <div class="keypad-section-label">EXTRAS</div>
+                  <div class="extras-grid">
+                    <button class="extra-btn" onclick="app.recordExtra('WD')">Wide</button>
+                    <button class="extra-btn" onclick="app.recordExtra('NB')" style="background: rgba(245, 158, 11, 0.25); color: #fbbf24;">No Ball (+Runs)</button>
+                    <button class="extra-btn" onclick="app.recordExtra('B')">Bye</button>
+                    <button class="extra-btn" onclick="app.recordExtra('LB')">Leg Bye</button>
+                    <button class="extra-btn" onclick="app.recordExtra('PEN')">Penalty</button>
+                  </div>
+
+                  <div class="action-grid">
+                    <button class="wicket-btn" onclick="app.openWicketModal()">
+                      <i class="fa-solid fa-skull"></i> WICKET
+                    </button>
+                    <button class="undo-btn" onclick="app.undoLastBall()">
+                      <i class="fa-solid fa-rotate-left"></i> Undo
+                    </button>
+                    <button class="end-over-btn" onclick="app.openBowlerSelectModal()">
+                      <i class="fa-solid fa-arrows-rotate"></i> Change Bowler
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Current Over Balls Track -->
+                <div class="card" style="padding: 0.9rem 1.25rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-muted);">CURRENT OVER BALLS:</div>
+                    <div id="live-current-over-balls">
+                      <!-- Rendered ball tags -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Active Batters Card -->
+                <div class="card">
+                  <div class="card-header" style="margin-bottom: 0.5rem;">
+                    <div class="card-title"><i class="fa-solid fa-cricket-bat-ball"></i> Active Batsmen</div>
+                    <div class="no-print-capture" style="display: flex; gap: 0.4rem;">
+                      <button class="btn btn-secondary btn-sm" onclick="app.openOpenersModal()"><i class="fa-solid fa-sliders"></i> Change Batters</button>
+                      <button class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModal()"><i class="fa-solid fa-user-plus"></i> + Add Player</button>
+                    </div>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Batter</th>
+                          <th>R</th>
+                          <th>B</th>
+                          <th>4s</th>
+                          <th>6s</th>
+                          <th>SR</th>
+                        </tr>
+                      </thead>
+                      <tbody id="live-batters-tbody">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Active Bowler Card -->
+                <div class="card">
+                  <div class="card-header" style="margin-bottom: 0.5rem;">
+                    <div class="card-title"><i class="fa-solid fa-bowling-ball"></i> Current Bowler</div>
+                    <button class="btn btn-secondary btn-sm no-print-capture" onclick="app.openQuickPlayerModal()"><i class="fa-solid fa-user-plus"></i> + Add Bowler</button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Bowler</th>
+                          <th>O</th>
+                          <th>M</th>
+                          <th>R</th>
+                          <th>W</th>
+                          <th>ECO</th>
+                        </tr>
+                      </thead>
+                      <tbody id="live-bowler-tbody">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Commentary Feed -->
+              <div>
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-list"></i> Ball-by-Ball Stream</div>
+                  </div>
+                  <div id="live-commentary-feed" class="commentary-list">
+                    <!-- Ball by ball logs -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. CREATE MATCH VIEW -->
+        <section id="view-create-match" class="view-section">
+          <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-calendar-plus"></i> Match Setup & Toss</div>
+              <button class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModal()"><i class="fa-solid fa-user-plus"></i> + Add Player to Squad</button>
+            </div>
+
+            <form id="create-match-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Match Number / Identifier</label>
+                  <input type="text" id="match-number" class="form-control" placeholder="e.g. Match 1 or Qualifier 1" required>
+                </div>
+                <div class="form-group">
+                  <label>Match Date</label>
+                  <input type="date" id="match-date" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Match Time</label>
+                  <input type="time" id="match-time" class="form-control" value="19:00">
+                </div>
+                <div class="form-group">
+                  <label>Venue / Stadium</label>
+                  <input type="text" id="match-venue" class="form-control" placeholder="Gaddafi Stadium, Lahore" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Team A (Home)</label>
+                  <select id="match-team-a" class="form-control" required onchange="app.onMatchTeamChange()">
+                    <!-- Options populated -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Team B (Away)</label>
+                  <select id="match-team-b" class="form-control" required onchange="app.onMatchTeamChange()">
+                    <!-- Options populated -->
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Overs Limit</label>
+                  <input type="number" id="match-overs" class="form-control" value="20" min="1" max="50" required>
+                </div>
+                <div class="form-group">
+                  <label>Match Stage/Type</label>
+                  <select id="match-stage" class="form-control">
+                    <option value="Group Stage">Group Stage</option>
+                    <option value="Qualifier 1">Qualifier 1</option>
+                    <option value="Eliminator">Eliminator</option>
+                    <option value="Qualifier 2">Qualifier 2</option>
+                    <option value="Final">Final</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Umpire(s)</label>
+                  <input type="text" id="match-umpire" class="form-control" placeholder="Aleem Dar & Marais Erasmus">
+                </div>
+                <div class="form-group">
+                  <label>Official Scorer</label>
+                  <input type="text" id="match-scorer" class="form-control" placeholder="Official Scorer Name">
+                </div>
+              </div>
+
+              <!-- Toss Box -->
+              <div class="card" style="background: var(--bg-input); margin-top: 1rem; border-color: var(--border-highlight);">
+                <h4 style="font-weight: 800; margin-bottom: 0.75rem; color: var(--primary);"><i class="fa-solid fa-coins"></i> Toss Information</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Toss Winner</label>
+                    <select id="toss-winner" class="form-control" required>
+                      <!-- Options -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Decision</label>
+                    <select id="toss-decision" class="form-control" required>
+                      <option value="Bat">Elected to Bat First</option>
+                      <option value="Bowl">Elected to Bowl First</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 1.5rem; text-align: right;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 1rem;">
+                  <i class="fa-solid fa-play"></i> Save & Select Openers
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- 4. MATCHES LIST VIEW -->
+        <section id="view-matches" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-list-check"></i> Tournament Matches</div>
+              <button class="btn btn-primary btn-sm" onclick="app.switchView('create-match')"><i class="fa-solid fa-plus"></i> Create Match</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="form-row" style="margin-bottom: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" id="matches-filter-search" class="form-control" placeholder="Filter by team or venue..." oninput="app.renderMatchesList()">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <select id="matches-filter-status" class="form-control" onchange="app.renderMatchesList()">
+                  <option value="ALL">All Match Statuses</option>
+                  <option value="LIVE">Live Now</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="UPCOMING">Upcoming</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="matches-cards-list" style="display: flex; flex-direction: column; gap: 1rem;">
+              <!-- Match cards -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. FULL SCORECARD VIEW -->
+        <section id="view-scorecard" class="view-section">
+          <div id="scorecard-content">
+            <!-- Scorecard Banner, Batting/Bowling tables, Fall of Wickets, Commentary -->
+          </div>
+        </section>
+
+        <!-- 6. POINTS TABLE VIEW -->
+        <section id="view-points-table" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-table-list"></i> Tournament Standings</div>
+              <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Table</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Pos</th>
+                    <th>Team</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>T</th>
+                    <th>NR</th>
+                    <th>Pts</th>
+                    <th>NRR</th>
+                  </tr>
+                </thead>
+                <tbody id="points-table-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+              * NRR = Net Run Rate = (Total Runs Scored / Total Overs Faced) - (Total Runs Conceded / Total Overs Bowled). Top teams advance to playoffs.
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. STATISTICS VIEW -->
+        <section id="view-statistics" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-fire"></i> Top Run Scorers</div>
+              <div style="display: flex; gap: 0.4rem;">
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('runs', 5)">Top 5</button>
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('runs', 10)">Top 10</button>
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('runs', 100)">All</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>M</th>
+                    <th>Runs</th>
+                    <th>Avg</th>
+                    <th>SR</th>
+                    <th>4s</th>
+                    <th>6s</th>
+                    <th>50s</th>
+                    <th>100s</th>
+                    <th>HS</th>
+                  </tr>
+                </thead>
+                <tbody id="stats-batting-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-bowling-ball"></i> Top Wicket Takers</div>
+              <div style="display: flex; gap: 0.4rem;">
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('bowling', 5)">Top 5</button>
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('bowling', 10)">Top 10</button>
+                <button class="btn btn-secondary btn-sm" onclick="app.renderStats('bowling', 100)">All</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>M</th>
+                    <th>Wkts</th>
+                    <th>Overs</th>
+                    <th>Runs</th>
+                    <th>Econ</th>
+                    <th>Best</th>
+                  </tr>
+                </thead>
+                <tbody id="stats-bowling-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Charts Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Visual Statistics Charts</div>
+            </div>
+            <div class="form-row">
+              <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-md);">
+                <h5 style="text-align: center; margin-bottom: 0.5rem; color: var(--primary);">Top 5 Batting Performances</h5>
+                <canvas id="chart-top-scorers" height="200"></canvas>
+              </div>
+              <div style="background: var(--bg-input); padding: 1rem; border-radius: var(--radius-md);">
+                <h5 style="text-align: center; margin-bottom: 0.5rem; color: var(--accent);">Top 5 Bowling Performances</h5>
+                <canvas id="chart-top-bowlers" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. RECORDS VIEW -->
+        <section id="view-records" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-medal"></i> Tournament Batting Records</div>
+            </div>
+            <div class="stats-grid" id="records-batting-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-trophy"></i> Tournament Bowling Records</div>
+            </div>
+            <div class="stats-grid" id="records-bowling-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-hands-catching"></i> Tournament Fielding Records</div>
+            </div>
+            <div class="stats-grid" id="records-fielding-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. TEAMS VIEW -->
+        <section id="view-teams" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-people-group"></i> Tournament Teams</div>
+              <button class="btn btn-primary btn-sm" onclick="app.openTeamModal()"><i class="fa-solid fa-plus"></i> Add Team</button>
+            </div>
+            <div id="teams-cards-grid" class="stats-grid">
+              <!-- Dynamic Team Cards -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. PLAYERS VIEW -->
+        <section id="view-players" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-user-ninja"></i> Players Directory</div>
+              <button class="btn btn-primary btn-sm" onclick="app.openPlayerModal()"><i class="fa-solid fa-plus"></i> Add Player</button>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" id="players-filter-search" class="form-control" placeholder="Search player name..." oninput="app.renderPlayersList()">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <select id="players-filter-team" class="form-control" onchange="app.renderPlayersList()">
+                  <option value="ALL">All Teams</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Role</th>
+                    <th>Jersey</th>
+                    <th>Runs</th>
+                    <th>Wkts</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="players-table-tbody">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. BRACKET & FINAL VIEW -->
+        <section id="view-knockout" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-sitemap"></i> Tournament Knockout Bracket</div>
+            </div>
+            <div id="knockout-bracket-container" class="bracket-wrapper">
+              <!-- Rendered bracket -->
+            </div>
+          </div>
+
+          <div class="card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-color: var(--warning);">
+            <div class="card-header">
+              <div class="card-title" style="color: var(--warning);"><i class="fa-solid fa-crown"></i> Tournament Final & Honor Roll</div>
+            </div>
+            <div id="tournament-final-summary">
+              <!-- Summary of champion & player of tournament -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. TOURNAMENT SETUP VIEW -->
+        <section id="view-setup" class="view-section">
+          <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-gears"></i> Active Tournament Configuration</div>
+              <button class="btn btn-accent btn-sm" onclick="app.openNewTournamentModal()"><i class="fa-solid fa-plus"></i> Add New Tournament</button>
+            </div>
+
+            <form id="tournament-setup-form">
+              <div class="form-group">
+                <label>Tournament Name</label>
+                <input type="text" id="setup-name" class="form-control" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Season / Year</label>
+                  <input type="text" id="setup-season" class="form-control" value="2026" required>
+                </div>
+                <div class="form-group">
+                  <label>Location / Country</label>
+                  <input type="text" id="setup-location" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Start Date</label>
+                  <input type="date" id="setup-start-date" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label>End Date</label>
+                  <input type="date" id="setup-end-date" class="form-control">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Tournament Format</label>
+                <select id="setup-format" class="form-control">
+                  <option value="League + Knockout">League + Knockout (Playoffs)</option>
+                  <option value="League">Pure Round-Robin League</option>
+                  <option value="Knockout">Knockout Only</option>
+                </select>
+              </div>
+
+              <div style="text-align: right; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Tournament Details</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- 13. DATA & ADMIN VIEW -->
+        <section id="view-settings" class="view-section">
+          <div class="card" style="max-width: 700px; margin: 0 auto;">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-database"></i> Data Management & Backups</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div>
+                <h4><i class="fa-solid fa-download"></i> Export Tournament Data</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.3rem 0 0.75rem 0;">Download all tournament statistics, matches, teams, and ball commentary as a JSON backup file.</p>
+                <button class="btn btn-primary" onclick="app.exportData()"><i class="fa-solid fa-file-export"></i> Download Backup JSON</button>
+              </div>
+
+              <hr style="border-color: var(--border-color);">
+
+              <div>
+                <h4><i class="fa-solid fa-upload"></i> Import Tournament Backup</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.3rem 0 0.75rem 0;">Restore a previously exported JSON backup file.</p>
+                <input type="file" id="import-json-file" accept=".json" class="form-control" style="margin-bottom: 0.75rem;">
+                <button class="btn btn-secondary" onclick="app.importData()"><i class="fa-solid fa-file-import"></i> Restore from File</button>
+              </div>
+
+              <hr style="border-color: var(--border-color);">
+
+              <div>
+                <h4 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Reset / Clear All Data</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.3rem 0 0.75rem 0;">Wipe all tournament data from LocalStorage and start fresh.</p>
+                <button class="btn btn-danger" onclick="app.confirmResetData()"><i class="fa-solid fa-trash"></i> Reset All Data</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+     MODALS
+     ========================================================================== -->
+
+  <!-- Select Openers & Bowler Modal -->
+  <div id="modal-openers" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-cricket-bat-ball" style="color: var(--primary);"></i> Select Openers & Bowler</div>
+      </div>
+
+      <form id="openers-form" onsubmit="app.submitOpeners(event)">
+        <div class="card" style="background: var(--bg-input); padding: 1rem; margin-bottom: 1rem; border-color: var(--border-highlight);">
+          <h4 style="color: var(--primary); margin-bottom: 0.6rem;"><i class="fa-solid fa-user-ninja"></i> Batting Team: <span id="openers-bat-team-name">-</span></h4>
+          
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="margin-bottom: 0;">Select Striker (Batter 1)</label>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModalForBatTeam()"><i class="fa-solid fa-user-plus"></i> + Add Player</button>
+            </div>
+            <select id="opener-striker" class="form-control" required>
+              <!-- Options -->
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="margin-bottom: 0;">Select Non-Striker (Batter 2)</label>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModalForBatTeam()"><i class="fa-solid fa-user-plus"></i> + Add Player</button>
+            </div>
+            <select id="opener-non-striker" class="form-control" required>
+              <!-- Options -->
+            </select>
+          </div>
+        </div>
+
+        <div class="card" style="background: var(--bg-input); padding: 1rem; margin-bottom: 1rem; border-color: var(--border-highlight);">
+          <h4 style="color: var(--accent); margin-bottom: 0.6rem;"><i class="fa-solid fa-bowling-ball"></i> Bowling Team: <span id="openers-bowl-team-name">-</span></h4>
+          
+          <div class="form-group" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+              <label style="margin-bottom: 0;">Select Opening Bowler</label>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModalForBowlTeam()"><i class="fa-solid fa-user-plus"></i> + Add Player</button>
+            </div>
+            <select id="opener-bowler" class="form-control" required>
+              <!-- Options -->
+            </select>
+          </div>
+        </div>
+
+        <div style="text-align: right;">
+          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 1rem;"><i class="fa-solid fa-play"></i> Confirm & Start Innings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add New Tournament Modal -->
+  <div id="modal-create-tournament" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-trophy" style="color: var(--primary);"></i> Add New Tournament</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-create-tournament')">&times;</button>
+      </div>
+
+      <form id="new-tournament-form" onsubmit="app.submitNewTournament(event)">
+        <div class="form-group">
+          <label>Tournament Name</label>
+          <input type="text" id="new-tourney-name" class="form-control" placeholder="e.g. World T20 Championship 2026" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Season / Year</label>
+            <input type="text" id="new-tourney-season" class="form-control" value="2026" required>
+          </div>
+          <div class="form-group">
+            <label>Location / Venue</label>
+            <input type="text" id="new-tourney-location" class="form-control" placeholder="e.g. National Stadium, Karachi" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="new-tourney-start-date" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="new-tourney-end-date" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tournament Format</label>
+          <select id="new-tourney-format" class="form-control">
+            <option value="League + Knockout">League + Knockout (Playoffs)</option>
+            <option value="League">Pure Round-Robin League</option>
+            <option value="Knockout">Knockout Only</option>
+          </select>
+        </div>
+
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Create Tournament</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Add Player Modal (During Match / Setup) -->
+  <div id="modal-quick-player" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Add Player to Team & Tournament</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-quick-player')">&times;</button>
+      </div>
+
+      <form id="quick-player-form" onsubmit="app.submitQuickPlayer(event)">
+        <div class="form-group">
+          <label>Player Name</label>
+          <input type="text" id="quick-player-name" class="form-control" placeholder="e.g. Shaheen Shah Afridi" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Team</label>
+            <select id="quick-player-team" class="form-control" required>
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Jersey #</label>
+            <input type="number" id="quick-player-jersey" class="form-control" placeholder="10" min="1" max="999">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Player Role</label>
+          <select id="quick-player-role" class="form-control" required>
+            <option value="Batsman">Batsman</option>
+            <option value="Bowler">Bowler</option>
+            <option value="All-Rounder">All-Rounder</option>
+            <option value="Wicket-Keeper">Wicket-Keeper</option>
+          </select>
+        </div>
+
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Add Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Wicket Modal -->
+  <div id="modal-wicket" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-skull" style="color: var(--danger);"></i> Record Wicket Dismissal</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-wicket')">&times;</button>
+      </div>
+
+      <form id="wicket-form" onsubmit="app.submitWicket(event)">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModalForBatTeam()"><i class="fa-solid fa-user-plus"></i> + Add Missing Batter</button>
+        </div>
+
+        <div class="form-group">
+          <label>Dismissed Batter</label>
+          <select id="wicket-dismissed-batter" class="form-control" required>
+            <!-- Options populated -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Wicket Type / Method</label>
+          <select id="wicket-type" class="form-control" required onchange="app.onWicketTypeChange()">
+            <option value="Bowled">Bowled</option>
+            <option value="Caught">Caught</option>
+            <option value="LBW">LBW</option>
+            <option value="Run Out">Run Out</option>
+            <option value="Stumped">Stumped</option>
+            <option value="Hit Wicket">Hit Wicket</option>
+            <option value="Retired Hurt">Retired Hurt</option>
+            <option value="Retired Out">Retired Out</option>
+          </select>
+        </div>
+
+        <div id="wicket-fielder-group" class="form-group" style="display: none;">
+          <label id="wicket-fielder-label">Fielder Involved</label>
+          <select id="wicket-fielder" class="form-control">
+            <!-- Options populated -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Next Incoming Batter</label>
+          <select id="wicket-next-batter" class="form-control" required>
+            <!-- Options populated -->
+          </select>
+        </div>
+
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-check"></i> Confirm Dismissal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bowler Select Modal -->
+  <div id="modal-bowler" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-bowling-ball" style="color: var(--primary);"></i> Select Next Bowler</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-bowler')">&times;</button>
+      </div>
+
+      <form id="bowler-select-form" onsubmit="app.submitBowlerSelect(event)">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="app.openQuickPlayerModalForBowlTeam()"><i class="fa-solid fa-user-plus"></i> + Add Missing Bowler</button>
+        </div>
+
+        <div class="form-group">
+          <label>Select Bowler for Next Over</label>
+          <select id="select-next-bowler" class="form-control" required>
+            <!-- Options -->
+          </select>
+        </div>
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Start Over</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Team Create/Edit Modal -->
+  <div id="modal-team" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="team-modal-title">Create New Team</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-team')">&times;</button>
+      </div>
+
+      <form id="team-form" onsubmit="app.submitTeam(event)">
+        <input type="hidden" id="team-edit-id">
+        <div class="form-group">
+          <label>Team Name</label>
+          <input type="text" id="team-name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Coach</label>
+            <input type="text" id="team-coach" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Team Theme Color</label>
+            <input type="color" id="team-color" class="form-control" value="#10b981" style="height: 42px;">
+          </div>
+        </div>
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary">Save Team</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Player Create/Edit Modal -->
+  <div id="modal-player" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="player-modal-title">Add New Player</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-player')">&times;</button>
+      </div>
+
+      <form id="player-form" onsubmit="app.submitPlayer(event)">
+        <input type="hidden" id="player-edit-id">
+        <div class="form-group">
+          <label>Player Name</label>
+          <input type="text" id="player-name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Team</label>
+            <select id="player-team" class="form-control" required>
+              <!-- Options -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Jersey #</label>
+            <input type="number" id="player-jersey" class="form-control" min="1" max="999">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="player-role" class="form-control" required>
+            <option value="Batsman">Batsman</option>
+            <option value="Bowler">Bowler</option>
+            <option value="All-Rounder">All-Rounder</option>
+            <option value="Wicket-Keeper">Wicket-Keeper</option>
+          </select>
+        </div>
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary">Save Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Player Profile Modal -->
+  <div id="modal-player-profile" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-id-card"></i> Player Profile</div>
+        <button class="close-modal-btn" onclick="app.closeModal('modal-player-profile')">&times;</button>
+      </div>
+      <div id="player-profile-body">
+        <!-- Content rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
