@@ -246,7 +246,7 @@ class CricketApp {
     const mobileBtn = document.getElementById('mobile-nav-toggle');
     if (mobileBtn) {
       mobileBtn.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
+        this.toggleSidebar();
       });
     }
 
@@ -523,7 +523,7 @@ class CricketApp {
     }
 
     // Close mobile menu
-    document.getElementById('sidebar').classList.remove('open');
+    this.closeSidebar();
 
     // Render view specific content
     if (viewId === 'dashboard') this.renderDashboard();
@@ -544,6 +544,20 @@ class CricketApp {
       const prevView = this.navigationStack.pop();
       this.switchView(prevView, true);
     }
+  }
+
+  toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
+  }
+
+  closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
   }
 
   renderAll() {
