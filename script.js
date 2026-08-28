@@ -351,6 +351,56 @@ class CricketApp {
     alert(`New Tournament "${newTourney.name}" created and set as active!`);
   }
 
+  deleteCurrentTournament() {
+    const activeT = this.getActiveTournament();
+    if (!activeT) return;
+
+    if (!confirm(`CAUTION: Are you sure you want to delete tournament "${activeT.name}" (${activeT.season})?\n\nAll matches, teams, and player records associated with this tournament will be permanently deleted.`)) {
+      return;
+    }
+
+    // Filter out the active tournament
+    this.state.tournaments = this.state.tournaments.filter(t => t.id !== activeT.id);
+    
+    // Filter out teams belonging to this tournament
+    const deletedTeamIds = this.state.teams.filter(t => t.tournamentId === activeT.id).map(t => t.id);
+    this.state.teams = this.state.teams.filter(t => t.tournamentId !== activeT.id);
+
+    // Filter out players belonging to deleted teams
+    this.state.players = this.state.players.filter(p => !deletedTeamIds.includes(p.teamId));
+
+    // Filter out matches belonging to this tournament
+    this.state.matches = this.state.matches.filter(m => m.tournamentId !== activeT.id);
+
+    // Clear active match if it belonged to this tournament
+    if (this.state.activeMatch && this.state.activeMatch.tournamentId === activeT.id) {
+      this.state.activeMatch = null;
+    }
+
+    // If no tournaments remain, create a default tournament automatically
+    if (this.state.tournaments.length === 0) {
+      const newTId = 'tourney_' + Date.now();
+      const defaultT = {
+        id: newTId,
+        name: 'New Cricket Tournament 2026',
+        season: '2026',
+        location: 'Local Cricket Ground',
+        format: 'League + Knockout',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: ''
+      };
+      this.state.tournaments.push(defaultT);
+      this.state.activeTournamentId = newTId;
+    } else {
+      this.state.activeTournamentId = this.state.tournaments[0].id;
+    }
+
+    this.saveState();
+    this.renderAll();
+    this.switchView('dashboard');
+    alert(`Tournament "${activeT.name}" deleted successfully!`);
+  }
+
   /* ==========================================================================
      QUICK ADD PLAYER (DURING MATCH / SETUP)
      ========================================================================== */
