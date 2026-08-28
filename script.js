@@ -2201,53 +2201,86 @@ class CricketApp {
     const finalSummary = document.getElementById('tournament-final-summary');
 
     const activeT = this.getActiveTournament();
+    const tournamentMatches = this.getMatchesForActiveTournament();
+    const playerStats = this.computeAllPlayerStats();
+    const topPlayer = playerStats.sort((a, b) => b.potScore - a.potScore)[0];
+
+    const knockoutStages = ['Qualifier 1', 'Eliminator', 'Qualifier 2', 'Final'];
+    const playoffMatches = tournamentMatches.filter(m => knockoutStages.includes(m.stage));
 
     if (container) {
-      container.innerHTML = `
-        <div class="bracket-round">
-          <h4 style="color: var(--primary);">Qualifier 1</h4>
-          <div class="bracket-match">
-            <div class="bracket-team winner"><span>Islamabad Warriors</span> <span>185/5</span></div>
-            <div class="bracket-team"><span>Lahore Lions</span> <span>167/8</span></div>
+      if (playoffMatches.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted); width: 100%;">
+            <i class="fa-solid fa-sitemap" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: var(--border-highlight);"></i>
+            <h4>No Playoff / Knockout Matches Played Yet</h4>
+            <p style="font-size: 0.85rem; margin-top: 0.3rem;">When creating a match, set stage to 'Qualifier 1', 'Eliminator', 'Qualifier 2', or 'Final' to display in this playoff bracket.</p>
           </div>
-        </div>
-        <div class="bracket-round">
-          <h4 style="color: var(--accent);">Eliminator</h4>
-          <div class="bracket-match">
-            <div class="bracket-team winner"><span>Peshawar Eagles</span> <span>160/4</span></div>
-            <div class="bracket-team"><span>Karachi Kings</span> <span>158/9</span></div>
-          </div>
-        </div>
-        <div class="bracket-round">
-          <h4 style="color: var(--warning);">Qualifier 2</h4>
-          <div class="bracket-match">
-            <div class="bracket-team winner"><span>Lahore Lions</span> <span>175/3</span></div>
-            <div class="bracket-team"><span>Peshawar Eagles</span> <span>172/7</span></div>
-          </div>
-        </div>
-        <div class="bracket-round">
-          <h4 style="color: var(--purple);">GRAND FINAL</h4>
-          <div class="bracket-match" style="border-color: var(--warning);">
-            <div class="bracket-team winner"><span>Islamabad Warriors</span> <span>CHAMPION</span></div>
-            <div class="bracket-team"><span>Lahore Lions</span> <span>RUNNER-UP</span></div>
-          </div>
-        </div>
-      `;
+        `;
+      } else {
+        let html = '';
+        knockoutStages.forEach(stageName => {
+          const match = playoffMatches.find(m => m.stage === stageName);
+          if (match) {
+            const teamA = this.getTeam(match.teamAId);
+            const teamB = this.getTeam(match.teamBId);
+            const inn1 = match.innings ? match.innings[0] : null;
+            const inn2 = match.innings ? match.innings[1] : null;
+
+            const isTeamAWinner = match.winnerId === match.teamAId;
+            const isTeamBWinner = match.winnerId === match.teamBId;
+
+            html += `
+              <div class="bracket-round">
+                <h4 style="color: var(--primary);">${stageName}</h4>
+                <div class="bracket-match" ${stageName === 'Final' ? 'style="border-color: var(--warning);"' : ''}>
+                  <div class="bracket-team ${isTeamAWinner ? 'winner' : ''}">
+                    <span>${teamA ? teamA.name : 'Team A'}</span>
+                    <span>${inn1 ? inn1.runs + '/' + inn1.wickets : '-'}</span>
+                  </div>
+                  <div class="bracket-team ${isTeamBWinner ? 'winner' : ''}">
+                    <span>${teamB ? teamB.name : 'Team B'}</span>
+                    <span>${inn2 ? inn2.runs + '/' + inn2.wickets : '-'}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        });
+        container.innerHTML = html || `<p style="color: var(--text-muted); text-align: center; padding: 1.5rem;">No knockout matches found.</p>`;
+      }
     }
 
     if (finalSummary) {
-      finalSummary.innerHTML = `
-        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-          <div>
-            <h3>🏆 CHAMPION: Islamabad Warriors</h3>
-            <p style="color: var(--text-muted);">Winner of ${activeT ? activeT.name : 'Tournament'}</p>
+      const finalMatch = tournamentMatches.find(m => m.stage === 'Final' && m.status === 'COMPLETED');
+      if (finalMatch) {
+        const champTeam = this.getTeam(finalMatch.winnerId);
+        const runnerTeamId = finalMatch.winnerId === finalMatch.teamAId ? finalMatch.teamBId : finalMatch.teamAId;
+        const runnerTeam = this.getTeam(runnerTeamId);
+
+        finalSummary.innerHTML = `
+          <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            <div>
+              <h3>🏆 CHAMPION: ${champTeam ? champTeam.name : 'Team'}</h3>
+              <p style="color: var(--text-muted);">Winner of ${activeT ? activeT.name : 'Tournament'}</p>
+            </div>
+            <div>
+              <h3>🥈 RUNNER-UP: ${runnerTeam ? runnerTeam.name : 'Team'}</h3>
+              <p style="color: var(--text-muted);">Playoff Finalist</p>
+            </div>
+            <div>
+              <h3>⭐ PLAYER OF TOURNAMENT: ${topPlayer ? topPlayer.name : 'N/A'}</h3>
+              <p style="color: var(--text-muted);">Highest Tournament Points & Performance</p>
+            </div>
           </div>
-          <div>
-            <h3>⭐ PLAYER OF TOURNAMENT: Babar Azam</h3>
-            <p style="color: var(--text-muted);">Highest Run Scorer & Most Boundaries</p>
+        `;
+      } else {
+        finalSummary.innerHTML = `
+          <div style="color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa-solid fa-crown" style="color: var(--warning);"></i> <strong>${activeT ? activeT.name : 'Tournament'}</strong> — Final match not completed yet. Play & complete the Final match to declare the official Champion!
           </div>
-        </div>
-      `;
+        `;
+      }
     }
   }
 
