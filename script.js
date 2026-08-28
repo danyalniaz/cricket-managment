@@ -26,6 +26,8 @@ class CricketApp {
     };
 
     this.charts = {};
+    this.navigationStack = [];
+    this.currentView = null;
     this.init();
   }
 
@@ -479,7 +481,17 @@ class CricketApp {
     alert(`Player "${name}" added to Team & Tournament records successfully!`);
   }
 
-  switchView(viewId) {
+  switchView(viewId, isBack = false) {
+    if (!isBack && this.currentView && this.currentView !== viewId) {
+      this.navigationStack.push(this.currentView);
+    }
+    this.currentView = viewId;
+
+    const backBtn = document.getElementById('header-back-btn');
+    if (backBtn) {
+      backBtn.style.display = (this.navigationStack.length > 0) ? 'inline-flex' : 'none';
+    }
+
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
 
@@ -504,7 +516,8 @@ class CricketApp {
         'records': 'Tournament Records',
         'knockout': 'Playoff Bracket & Finals',
         'setup': 'Tournament Setup',
-        'settings': 'Data Management & Backup'
+        'settings': 'Data Management & Backup',
+        'scorecard': 'Match Scorecard'
       };
       titleElem.textContent = titleMap[viewId] || 'Cricket Scorer Pro';
     }
@@ -524,6 +537,13 @@ class CricketApp {
     else if (viewId === 'records') this.renderRecordsView();
     else if (viewId === 'knockout') this.renderKnockoutView();
     else if (viewId === 'setup') this.populateSetupForm();
+  }
+
+  goBack() {
+    if (this.navigationStack.length > 0) {
+      const prevView = this.navigationStack.pop();
+      this.switchView(prevView, true);
+    }
   }
 
   renderAll() {
