@@ -199,6 +199,32 @@ class CricketApp {
     this.setColorVal('adm-danger-color', 'adm-danger-color-hex', s.dangerColor);
     const fontSel = document.getElementById('adm-font-family');
     if (fontSel) fontSel.value = s.fontFamily;
+
+    // Populate new advanced settings
+    this.setVal('adm-card-border', s.cardBorderStyle || 'neon');
+    this.setVal('adm-neon-intensity', s.neonIntensity || '60');
+    this.setVal('adm-border-radius', s.borderRadius || '10');
+    this.setVal('adm-sidebar-width', s.sidebarWidth || '260');
+    this.setVal('adm-tagline', s.tagline || 'Manage every ball, every run, every tournament.');
+    this.setVal('adm-footer-text', s.footerText || '© 2026 CRICSCORER PRO');
+
+    if (document.getElementById('adm-tilt-enabled')) document.getElementById('adm-tilt-enabled').checked = (s.tiltEnabled !== false);
+    if (document.getElementById('adm-splash-enabled')) document.getElementById('adm-splash-enabled').checked = (s.splashEnabled !== false);
+    if (document.getElementById('adm-transitions-enabled')) document.getElementById('adm-transitions-enabled').checked = (s.transitionsEnabled !== false);
+
+    // Sync labels
+    this.syncNeonIntensity();
+    this.syncBorderRadius();
+    this.syncSidebarWidth();
+
+    // Attach instant live preview event listener (event delegation)
+    const editorScroll = document.querySelector('.admin-editor-scroll');
+    if (editorScroll && !editorScroll.hasAttribute('data-live-bound')) {
+      editorScroll.addEventListener('input', () => this.adminLivePreview());
+      editorScroll.addEventListener('change', () => this.adminLivePreview());
+      editorScroll.setAttribute('data-live-bound', 'true');
+    }
+
     // Load iframe
     this.refreshAdminPreview();
   }
@@ -261,8 +287,9 @@ class CricketApp {
         const card    = document.getElementById('adm-card-color')?.value     || '#1e293b';
         const danger  = document.getElementById('adm-danger-color')?.value   || '#ef4444';
         const font    = document.getElementById('adm-font-family')?.value    || "'Inter', sans-serif";
-        const brandName = document.getElementById('adm-brand-name')?.value || 'CRICSCORER';
-        const brandSub  = document.getElementById('adm-brand-sub')?.value   || 'PRO MANAGEMENT';
+        const borderRadius = document.getElementById('adm-border-radius')?.value || '10';
+        const sidebarWidth = document.getElementById('adm-sidebar-width')?.value || '260';
+        const neonIntensity = document.getElementById('adm-neon-intensity')?.value || '60';
 
         styleEl.textContent = `:root {
           --primary: ${primary};
@@ -271,15 +298,39 @@ class CricketApp {
           --bg-sidebar: ${sidebar};
           --bg-card: ${card};
           --danger: ${danger};
+          --radius-lg: ${borderRadius}px;
+          --radius-md: ${Math.max(4, borderRadius - 4)}px;
+          --sidebar-width: ${sidebarWidth}px;
+          --neon-opacity: ${neonIntensity / 100};
         }
         body { font-family: ${font}; }`;
 
-        // Update brand name in iframe
+        // Hide/Show neon borders dynamically in preview
+        const borderStyle = document.getElementById('adm-card-border')?.value || 'neon';
+        if (borderStyle === 'none') {
+          styleEl.textContent += ` .card { border: none !important; } .card::before { display: none !important; }`;
+        } else if (borderStyle === 'solid') {
+          styleEl.textContent += ` .card::before { display: none !important; }`;
+        }
+
+        // Update Text Elements in iframe
+        const brandName = document.getElementById('adm-brand-name')?.value || 'CRICSCORER';
+        const brandSub  = document.getElementById('adm-brand-sub')?.value   || 'PRO MANAGEMENT';
+        const welcomeMsg = document.getElementById('adm-welcome-msg')?.value || 'Welcome to CricScorer Pro!';
+        const tagline = document.getElementById('adm-tagline')?.value || '';
+
         const bName = iDoc.getElementById('brand-name-display');
         if (bName) bName.textContent = brandName;
         const bSub = iDoc.querySelector('.brand-sub');
         if (bSub) bSub.textContent = brandSub;
-      } catch(e) { /* cross-origin restriction */ }
+        
+        // Find welcome message on dashboard
+        const headers = iDoc.querySelectorAll('h2');
+        headers.forEach(h => {
+          if (h.textContent.includes('Welcome')) h.textContent = welcomeMsg;
+        });
+
+      } catch(e) { /* cross-origin restriction if any */ }
     }
   }
 
@@ -297,19 +348,86 @@ class CricketApp {
 
   applyAdminChanges() {
     const s = this.adminSettings;
-    s.brandName     = document.getElementById('adm-brand-name')?.value.trim() || 'CRICSCORER';
-    s.brandSub      = document.getElementById('adm-brand-sub')?.value.trim()  || 'PRO MANAGEMENT';
-    s.welcomeMsg    = document.getElementById('adm-welcome-msg')?.value.trim() || '';
-    s.primaryColor  = document.getElementById('adm-primary-color')?.value  || '#10b981';
-    s.accentColor   = document.getElementById('adm-accent-color')?.value   || '#3b82f6';
-    s.bgColor       = document.getElementById('adm-bg-color')?.value       || '#0b1120';
-    s.sidebarColor  = document.getElementById('adm-sidebar-color')?.value  || '#0f172a';
-    s.cardColor     = document.getElementById('adm-card-color')?.value     || '#1e293b';
-    s.dangerColor   = document.getElementById('adm-danger-color')?.value   || '#ef4444';
-    s.fontFamily    = document.getElementById('adm-font-family')?.value    || "'Inter', sans-serif";
+    const g = (id) => document.getElementById(id);
+    const val = (id) => { const el = g(id); return el ? el.value.trim() : null; };
+    const chk = (id) => { const el = g(id); return el ? el.checked : false; };
+
+    s.brandName     = val('adm-brand-name') || 'CRICSCORER';
+    s.brandSub      = val('adm-brand-sub')  || 'PRO MANAGEMENT';
+    s.welcomeMsg    = val('adm-welcome-msg') || 'Welcome to CricScorer Pro!';
+    s.primaryColor  = val('adm-primary-color')  || '#10b981';
+    s.accentColor   = val('adm-accent-color')   || '#3b82f6';
+    s.bgColor       = val('adm-bg-color')       || '#0b1120';
+    s.sidebarColor  = val('adm-sidebar-color')  || '#0f172a';
+    s.cardColor     = val('adm-card-color')     || '#1e293b';
+    s.dangerColor   = val('adm-danger-color')   || '#ef4444';
+    s.fontFamily    = val('adm-font-family')    || "'Inter', sans-serif";
+    
+    s.cardBorderStyle = val('adm-card-border') || 'neon';
+    s.neonIntensity   = val('adm-neon-intensity') || '60';
+    s.borderRadius    = val('adm-border-radius') || '10';
+    s.sidebarWidth    = val('adm-sidebar-width') || '260';
+    s.tagline         = val('adm-tagline') || 'Manage every ball, every run, every tournament.';
+    s.footerText      = val('adm-footer-text') || '© 2026 CRICSCORER PRO';
+
+    s.tiltEnabled        = chk('adm-tilt-enabled');
+    s.splashEnabled      = chk('adm-splash-enabled');
+    s.transitionsEnabled = chk('adm-transitions-enabled');
+
     this.saveAdminSettings();
     this.applyAdminTheme(s);
     this.showToast('✅ Admin changes applied & saved!', 'success');
+  }
+
+  applyAdminTheme(settings) {
+    const root = document.documentElement;
+    root.style.setProperty('--primary', settings.primaryColor || '#10b981');
+    root.style.setProperty('--primary-hover', this.darken(settings.primaryColor || '#10b981', 10));
+    root.style.setProperty('--accent', settings.accentColor || '#3b82f6');
+    root.style.setProperty('--bg-main', settings.bgColor || '#0b1120');
+    root.style.setProperty('--bg-sidebar', settings.sidebarColor || '#0f172a');
+    root.style.setProperty('--bg-card', settings.cardColor || '#1e293b');
+    root.style.setProperty('--danger', settings.dangerColor || '#ef4444');
+    
+    // Advanced variables
+    if (settings.borderRadius) {
+      root.style.setProperty('--radius-lg', settings.borderRadius + 'px');
+      root.style.setProperty('--radius-md', Math.max(4, settings.borderRadius - 4) + 'px');
+    }
+    if (settings.sidebarWidth) {
+      root.style.setProperty('--sidebar-width', settings.sidebarWidth + 'px');
+    }
+    if (settings.neonIntensity) {
+      root.style.setProperty('--neon-opacity', settings.neonIntensity / 100);
+    }
+    document.body.style.fontFamily = settings.fontFamily || "'Inter', sans-serif";
+
+    // CSS overwrites for border styles (remove classes or inject small style tag)
+    let dynamicStyle = document.getElementById('admin-dynamic-styles');
+    if (!dynamicStyle) {
+      dynamicStyle = document.createElement('style');
+      dynamicStyle.id = 'admin-dynamic-styles';
+      document.head.appendChild(dynamicStyle);
+    }
+    let css = '';
+    if (settings.cardBorderStyle === 'none') {
+      css += ` .card { border: none !important; } .card::before { display: none !important; }`;
+    } else if (settings.cardBorderStyle === 'solid') {
+      css += ` .card::before { display: none !important; }`;
+    }
+    dynamicStyle.textContent = css;
+
+    // Update text content
+    const brandEl = document.getElementById('brand-name-display');
+    if (brandEl) brandEl.textContent = settings.brandName || 'CRICSCORER';
+    const brandSub = document.querySelector('.brand-sub');
+    if (brandSub) brandSub.textContent = settings.brandSub || 'PRO MANAGEMENT';
+
+    // Update Welcome message if we are on dashboard
+    const dashWelcome = document.querySelector('#view-dashboard h2');
+    if (dashWelcome) {
+      dashWelcome.innerHTML = `👋 ${settings.welcomeMsg || 'Welcome to CricScorer Pro!'}`;
+    }
   }
 
   changeAdminPassword() {
@@ -339,6 +457,161 @@ class CricketApp {
     this.applyAdminTheme(this.adminSettings);
     this.showToast('🔄 Defaults restored!', 'success');
   }
+
+  /* ==========================================================================
+     DASHBOARD SETTINGS — SAVE
+     ========================================================================== */
+  saveDashboardSettings() {
+    const g = (id) => document.getElementById(id);
+    const chk = (id) => { const el = g(id); return el ? el.checked : false; };
+    const val = (id) => { const el = g(id); return el ? el.value : null; };
+
+    const s = this.adminSettings;
+    s.defaultOvers     = parseInt(val('stg-overs'))          || 20;
+    s.autoEndOver      = chk('stg-auto-over');
+    s.wideRun          = chk('stg-wide-run');
+    s.freeHit          = chk('stg-free-hit');
+    s.drsPerTeam       = parseInt(val('stg-drs'))            || 2;
+    s.recentMatchCount = parseInt(val('stg-recent-matches')) || 3;
+    s.neonBorders      = chk('stg-neon-borders');
+    s.compactMode      = chk('stg-compact');
+    s.showAvatars      = chk('stg-avatars');
+    s.defaultFormat    = val('stg-format') || 'League + Knockout';
+    s.ptsWin           = parseInt(val('stg-pts-win'))        || 2;
+    s.ptsTie           = parseInt(val('stg-pts-tie'))        || 1;
+    s.nrrTiebreaker    = chk('stg-nrr');
+    s.currency         = val('stg-currency')                 || 'PKR';
+    s.autoBackup       = chk('stg-backup');
+    s.confirmDelete    = chk('stg-confirm-del');
+    s.publicAccess     = chk('stg-public');
+
+    // Apply theme from stg-theme toggle
+    const themeVal = val('stg-theme');
+    if (themeVal === 'light') document.body.classList.add('light-theme');
+    else document.body.classList.remove('light-theme');
+
+    this.saveAdminSettings();
+    this.showToast('⚙️ Settings saved!', 'success');
+  }
+
+  /* ==========================================================================
+     ADMIN SLIDER SYNC HELPERS
+     ========================================================================== */
+  syncNeonIntensity() {
+    const slider = document.getElementById('adm-neon-intensity');
+    const label  = document.getElementById('adm-neon-val');
+    if (!slider) return;
+    const val = slider.value;
+    if (label) label.textContent = val + '%';
+    // Apply as CSS variable
+    const intensity = val / 100;
+    document.documentElement.style.setProperty('--neon-opacity', intensity);
+  }
+
+  syncBorderRadius() {
+    const slider = document.getElementById('adm-border-radius');
+    const label  = document.getElementById('adm-radius-val');
+    if (!slider) return;
+    const val = slider.value;
+    if (label) label.textContent = val + 'px';
+    document.documentElement.style.setProperty('--radius-lg', val + 'px');
+    document.documentElement.style.setProperty('--radius-md', Math.max(4, val - 4) + 'px');
+  }
+
+  syncSidebarWidth() {
+    const slider = document.getElementById('adm-sidebar-width');
+    const label  = document.getElementById('adm-sidebar-width-val');
+    if (!slider) return;
+    const val = slider.value;
+    if (label) label.textContent = val + 'px';
+    document.documentElement.style.setProperty('--sidebar-width', val + 'px');
+  }
+
+  /* ==========================================================================
+     DATA EXPORT / IMPORT / CLEAR
+     ========================================================================== */
+  exportAllDataJSON() {
+    const payload = {
+      exportDate: new Date().toISOString(),
+      version: 'CricScorer-v3',
+      data: this.state,
+      adminSettings: this.adminSettings
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `cricscorer-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.showToast('📥 Data exported as JSON!', 'success');
+  }
+
+  exportAllDataCSV() {
+    let csv = 'Type,ID,Name,Details\n';
+    (this.state.tournaments || []).forEach(t => {
+      csv += `Tournament,${t.id},"${t.name}","${t.format} | ${t.location}"\n`;
+    });
+    (this.state.teams || []).forEach(t => {
+      csv += `Team,${t.id},"${t.name}","Coach: ${t.coach||'-'}"\n`;
+    });
+    (this.state.players || []).forEach(p => {
+      csv += `Player,${p.id},"${p.name}","Role: ${p.role} | Jersey: ${p.jersey||'-'}"\n`;
+    });
+    (this.state.matches || []).forEach(m => {
+      const tA = this.getTeam(m.teamAId);
+      const tB = this.getTeam(m.teamBId);
+      csv += `Match,${m.id},"${tA?.name||'?'} vs ${tB?.name||'?'}","Status: ${m.status}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `cricscorer-data-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.showToast('📊 Data exported as CSV!', 'success');
+  }
+
+  adminImportData() {
+    const fileInput = document.getElementById('adm-import-file');
+    if (fileInput) fileInput.click();
+  }
+
+  handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!parsed.data) { this.showToast('❌ Invalid backup file!', 'error'); return; }
+        if (!confirm('This will replace ALL current data. Are you sure?')) return;
+        this.state = parsed.data;
+        if (parsed.adminSettings) {
+          this.adminSettings = parsed.adminSettings;
+          this.saveAdminSettings();
+          this.applyAdminTheme(this.adminSettings);
+        }
+        this.saveState();
+        this.renderAll();
+        this.showToast('✅ Data imported successfully!', 'success');
+      } catch(err) {
+        this.showToast('❌ Failed to parse backup file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // reset input
+  }
+
+  clearAllData() {
+    if (!confirm('⚠️ This will DELETE all tournaments, teams, players, and matches. Are you absolutely sure?')) return;
+    if (!confirm('FINAL WARNING: All data will be permanently deleted!')) return;
+    localStorage.removeItem('CRICKET_TOURNAMENT_DB_V3');
+    location.reload();
+  }
+
+
 
   /* ==========================================================================
      3D CARD PARALLAX TILT
@@ -993,6 +1266,125 @@ class CricketApp {
         });
         dashContainer.innerHTML = html;
       }
+    }
+
+    // ─── DASHBOARD BOTTOM SETTINGS PANEL ───
+    const settingsContainer = document.getElementById('dashboard-settings-section');
+    if (settingsContainer) {
+      const s = this.adminSettings;
+      settingsContainer.innerHTML = `
+        <div class="card settings-section-card neon-green">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-sliders"></i> Quick Settings &amp; Configuration</div>
+            <button class="btn btn-primary btn-sm" onclick="app.saveDashboardSettings()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Settings
+            </button>
+          </div>
+          <div class="settings-grid">
+            <div class="settings-group neon-blue">
+              <div class="settings-group-title"><i class="fa-solid fa-cricket-bat-ball"></i> Scoring</div>
+              <div class="setting-row">
+                <span class="setting-label">Default Overs / Match</span>
+                <input type="number" class="setting-input-sm" id="stg-overs" value="${s.defaultOvers||20}" min="1" max="50">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Auto End Over (10 balls)</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-auto-over" ${s.autoEndOver?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Wide = Extra Run</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-wide-run" ${s.wideRun!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">No Ball = Free Hit</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-free-hit" ${s.freeHit!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">DRS Reviews Per Team</span>
+                <input type="number" class="setting-input-sm" id="stg-drs" value="${s.drsPerTeam||2}" min="0" max="5">
+              </div>
+            </div>
+            <div class="settings-group neon-purple">
+              <div class="settings-group-title"><i class="fa-solid fa-display"></i> Display</div>
+              <div class="setting-row">
+                <span class="setting-label">Theme Mode</span>
+                <select class="setting-select" id="stg-theme">
+                  <option value="dark" ${!document.body.classList.contains('light-theme')?'selected':''}>🌙 Dark</option>
+                  <option value="light" ${document.body.classList.contains('light-theme')?'selected':''}>☀️ Light</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Recent Matches Shown</span>
+                <input type="number" class="setting-input-sm" id="stg-recent-matches" value="${s.recentMatchCount||3}" min="1" max="10">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Neon Borders on Cards</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-neon-borders" ${s.neonBorders!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Compact Mode</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-compact" ${s.compactMode?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Show Player Avatars</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-avatars" ${s.showAvatars!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+            <div class="settings-group neon-amber">
+              <div class="settings-group-title"><i class="fa-solid fa-trophy"></i> Tournament Rules</div>
+              <div class="setting-row">
+                <span class="setting-label">Default Format</span>
+                <select class="setting-select" id="stg-format">
+                  <option value="League + Knockout">League + KO</option>
+                  <option value="Round Robin">Round Robin</option>
+                  <option value="Knockout Only">Knockout Only</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Points: Win</span>
+                <input type="number" class="setting-input-sm" id="stg-pts-win" value="${s.ptsWin||2}" min="1" max="5">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Points: Tie / NR</span>
+                <input type="number" class="setting-input-sm" id="stg-pts-tie" value="${s.ptsTie||1}" min="0" max="3">
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">NRR Tiebreaker</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-nrr" ${s.nrrTiebreaker!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Currency</span>
+                <select class="setting-select" id="stg-currency">
+                  <option value="PKR" ${(s.currency||'PKR')==='PKR'?'selected':''}>🇵🇰 PKR</option>
+                  <option value="USD" ${(s.currency||'')==='USD'?'selected':''}>🇺🇸 USD</option>
+                  <option value="INR" ${(s.currency||'')==='INR'?'selected':''}>🇮🇳 INR</option>
+                  <option value="GBP" ${(s.currency||'')==='GBP'?'selected':''}>🇬🇧 GBP</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-group neon-cyan">
+              <div class="settings-group-title"><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Data</div>
+              <div class="setting-row">
+                <span class="setting-label">Auto Backup (Daily)</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-backup" ${s.autoBackup?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Confirm Before Delete</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-confirm-del" ${s.confirmDelete!==false?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <span class="setting-label">Public Score Access</span>
+                <label class="toggle-switch"><input type="checkbox" id="stg-public" ${s.publicAccess?'checked':''}><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row" style="padding-top:0.75rem;">
+                <button class="btn btn-secondary btn-sm" onclick="app.exportAllDataJSON()" style="flex:1;font-size:0.78rem;">
+                  <i class="fa-solid fa-download"></i> Export Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 

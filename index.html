@@ -404,6 +404,12 @@
               <!-- Dynamically populated matches list -->
             </div>
           </div>
+
+          <!-- ═══ DASHBOARD BOTTOM SETTINGS ═══ -->
+          <div id="dashboard-settings-section">
+            <!-- Rendered dynamically by renderDashboard() -->
+          </div>
+
         </section>
 
         <!-- 2. LIVE SCORER VIEW -->
@@ -1520,12 +1526,190 @@
             <i class="fa-solid fa-key"></i> Update Password
           </button>
 
+          <!-- ─── APPEARANCE ADVANCED ─── -->
+          <div class="admin-section-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Appearance &amp; Effects</div>
+          <div class="form-group">
+            <label>Card Border Style</label>
+            <select id="adm-card-border" class="form-control" onchange="app.adminLivePreview()">
+              <option value="neon">✨ Neon Animated (Default)</option>
+              <option value="solid">— Solid Border</option>
+              <option value="none">○ No Border</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Neon Glow Intensity</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <input type="range" id="adm-neon-intensity" min="0" max="100" value="60" style="flex:1;" oninput="app.syncNeonIntensity()">
+              <span id="adm-neon-val" style="font-size:0.8rem;color:var(--primary);font-weight:700;min-width:35px;">60%</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Card Border Radius</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <input type="range" id="adm-border-radius" min="0" max="24" value="10" style="flex:1;" oninput="app.syncBorderRadius()">
+              <span id="adm-radius-val" style="font-size:0.8rem;color:var(--primary);font-weight:700;min-width:35px;">10px</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Enable 3D Card Tilt</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-tilt-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Hover 3D parallax effect</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Enable Splash Intro Animation</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-splash-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Babar Azam opening screen</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Enable Page Transitions</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-transitions-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Smooth view fade animations</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Sidebar Width</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <input type="range" id="adm-sidebar-width" min="200" max="320" value="260" style="flex:1;" oninput="app.syncSidebarWidth()">
+              <span id="adm-sidebar-width-val" style="font-size:0.8rem;color:var(--primary);font-weight:700;min-width:45px;">260px</span>
+            </div>
+          </div>
+
+          <!-- ─── TOURNAMENT DEFAULTS ─── -->
+          <div class="admin-section-label"><i class="fa-solid fa-cricket-bat-ball"></i> Cricket Tournament Defaults</div>
+          <div class="form-group">
+            <label>Default Overs Per Match</label>
+            <input type="number" id="adm-default-overs" class="form-control" value="20" min="1" max="50" placeholder="20">
+          </div>
+          <div class="form-group">
+            <label>Default Tournament Format</label>
+            <select id="adm-default-format" class="form-control">
+              <option value="League + Knockout">League + Knockout</option>
+              <option value="Round Robin">Round Robin</option>
+              <option value="Knockout Only">Knockout Only</option>
+              <option value="Double Elimination">Double Elimination</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Default Venue / Ground</label>
+            <input type="text" id="adm-default-venue" class="form-control" placeholder="e.g. Gaddafi Stadium, Lahore">
+          </div>
+          <div class="form-group">
+            <label>Default Season Year</label>
+            <input type="text" id="adm-default-season" class="form-control" placeholder="2026">
+          </div>
+          <div class="form-group">
+            <label>Currency for Prize Pool</label>
+            <select id="adm-currency" class="form-control">
+              <option value="PKR">🇵🇰 PKR — Pakistani Rupee</option>
+              <option value="USD">🇺🇸 USD — US Dollar</option>
+              <option value="INR">🇮🇳 INR — Indian Rupee</option>
+              <option value="GBP">🇬🇧 GBP — British Pound</option>
+            </select>
+          </div>
+
+          <!-- ─── NOTIFICATIONS & UX ─── -->
+          <div class="admin-section-label"><i class="fa-solid fa-bell"></i> Notifications &amp; UX</div>
+          <div class="form-group">
+            <label>Show Toast Notifications</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-toast-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Success/error popups</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Auto-Save Data</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-autosave" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Save after every change</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Scoring Sound Effects</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-sounds-enabled">
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Beep on wicket &amp; six</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirm Before Delete</label>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="adm-confirm-delete" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.8rem;color:var(--text-muted);">Safety confirmation dialog</span>
+            </div>
+          </div>
+
+          <!-- ─── CUSTOM TEXT / CONTENT ─── -->
+          <div class="admin-section-label"><i class="fa-solid fa-file-pen"></i> Custom Content</div>
+          <div class="form-group">
+            <label>Dashboard Banner Tagline</label>
+            <input type="text" id="adm-tagline" class="form-control" placeholder="e.g. Play Hard. Score Big.">
+          </div>
+          <div class="form-group">
+            <label>Footer / Copyright Text</label>
+            <input type="text" id="adm-footer-text" class="form-control" placeholder="© 2026 My Cricket Club">
+          </div>
+          <div class="form-group">
+            <label>Organizer / Club Name</label>
+            <input type="text" id="adm-organizer" class="form-control" placeholder="Pakistan Cricket Academy">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp Contact</label>
+            <input type="text" id="adm-whatsapp" class="form-control" placeholder="+92 300 0000000">
+          </div>
+
+          <!-- ─── DATA & EXPORT ─── -->
+          <div class="admin-section-label"><i class="fa-solid fa-file-export"></i> Data &amp; Export</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+            <button class="btn btn-secondary" onclick="app.exportAllDataJSON()" style="font-size:0.8rem;">
+              <i class="fa-solid fa-download"></i> Export JSON
+            </button>
+            <button class="btn btn-secondary" onclick="app.exportAllDataCSV()" style="font-size:0.8rem;">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+            <button class="btn btn-accent" onclick="app.adminImportData()" style="font-size:0.8rem;">
+              <i class="fa-solid fa-upload"></i> Import Data
+            </button>
+            <button class="btn btn-danger" onclick="app.clearAllData()" style="font-size:0.8rem;">
+              <i class="fa-solid fa-trash-can"></i> Clear All
+            </button>
+          </div>
+          <input type="file" id="adm-import-file" accept=".json" style="display:none;" onchange="app.handleImportFile(event)">
+
+          <!-- ─── RESET ─── -->
           <div class="admin-section-label"><i class="fa-solid fa-rotate-left"></i> Reset</div>
           <button class="btn btn-secondary" onclick="app.resetAdminDefaults()" style="width:100%;margin-bottom:0.5rem;">
             <i class="fa-solid fa-arrow-rotate-left"></i> Reset to Defaults
           </button>
 
-        </div>
+
       </div>
 
       <!-- RIGHT: Live Preview iframe -->
