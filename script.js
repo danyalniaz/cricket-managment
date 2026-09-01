@@ -53,26 +53,30 @@ class CricketApp {
   }
 
   /* ==========================================================================
-     SPLASH INTRO ANIMATION (HD PHOTO — BABAR AZAM COVER DRIVE)
+     SPLASH INTRO ANIMATION (CINEMATIC — BABAR AZAM COVER DRIVE)
      ========================================================================== */
   playSplashScreen() {
     const splash = document.getElementById('app-splash-screen');
     if (!splash) return;
+    // Ensure visible
+    splash.style.display = '';
     splash.classList.remove('hidden');
 
-    // Auto-close after the full animation sequence completes
+    // Auto-close after full animation (6s — covers all CSS animation delays)
     if (this.splashTimer) clearTimeout(this.splashTimer);
     this.splashTimer = setTimeout(() => {
       this.closeSplashScreen();
-    }, 3800);
+    }, 6200);
   }
 
   closeSplashScreen() {
     const splash = document.getElementById('app-splash-screen');
     if (splash) {
       splash.classList.add('hidden');
-      // Remove from DOM after transition completes
-      setTimeout(() => { splash.style.display = 'none'; }, 750);
+      // Stop canvas particle engine
+      if (typeof window.stopSplashCanvas === 'function') window.stopSplashCanvas();
+      // Remove from DOM after fade-out
+      setTimeout(() => { if (splash.parentNode) splash.style.display = 'none'; }, 900);
     }
     if (this.splashTimer) clearTimeout(this.splashTimer);
   }

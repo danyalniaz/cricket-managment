@@ -1,0 +1,385 @@
+/* ============================================================
+   CRICSCORER PRO — CINEMATIC ANIMATED SPLASH / INTRO
+   ============================================================ */
+
+/* === RESET === */
+#app-splash-screen * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ============================================================
+   ROOT OVERLAY
+   ============================================================ */
+#app-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+#app-splash-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   LAYER 1 — FULL BLEED HD PHOTO (Ken Burns zoom)
+   ============================================================ */
+.sp-photo-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.sp-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  transform: scale(1.15);
+  transform-origin: 65% 40%;
+  animation: kenBurns 6s ease-out forwards;
+}
+
+@keyframes kenBurns {
+  0%   { transform: scale(1.18) translate(2%, 1%); filter: brightness(0.3); }
+  20%  { filter: brightness(1.05); }
+  100% { transform: scale(1.0)  translate(0, 0); filter: brightness(0.85); }
+}
+
+/* ============================================================
+   LAYER 2 — CINEMATIC GRADIENT OVERLAYS
+   ============================================================ */
+.sp-gradient-left {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    105deg,
+    rgba(0,0,0,0.92) 0%,
+    rgba(0,0,0,0.75) 28%,
+    rgba(0,0,0,0.30) 55%,
+    rgba(0,0,0,0.10) 75%,
+    transparent 100%
+  );
+}
+
+.sp-gradient-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 55%;
+  z-index: 2;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.60) 40%,
+    transparent 100%
+  );
+}
+
+/* ============================================================
+   LAYER 3 — CINEMATIC LETTERBOX BARS (slide open)
+   ============================================================ */
+.sp-bar-top,
+.sp-bar-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12%;
+  z-index: 8;
+  background: #000;
+}
+.sp-bar-top {
+  top: 0;
+  transform: translateY(0);
+  animation: barSlideUp 0.9s cubic-bezier(0.77,0,0.175,1) 0.2s forwards;
+}
+.sp-bar-bottom {
+  bottom: 0;
+  transform: translateY(0);
+  animation: barSlideDown 0.9s cubic-bezier(0.77,0,0.175,1) 0.2s forwards;
+}
+@keyframes barSlideUp   { to { transform: translateY(-100%); } }
+@keyframes barSlideDown { to { transform: translateY(100%);  } }
+
+/* ============================================================
+   LAYER 4 — CANVAS (Particle Sparks)
+   ============================================================ */
+#splash-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ============================================================
+   LAYER 5 — LIGHT STREAK (Bat Impact Flash)
+   ============================================================ */
+.sp-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: radial-gradient(ellipse at 58% 42%, rgba(255,255,255,0.9) 0%, transparent 55%);
+  opacity: 0;
+  animation: bigFlash 0.6s ease-out 1.1s forwards;
+}
+@keyframes bigFlash {
+  0%   { opacity: 0;   transform: scale(0.5); }
+  30%  { opacity: 0.9; transform: scale(1.2); }
+  100% { opacity: 0;   transform: scale(1.5); }
+}
+
+/* ============================================================
+   LAYER 6 — MAIN TEXT CONTENT
+   ============================================================ */
+.sp-content {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 4vw 5vw 5vw;
+}
+
+/* Country badge */
+.sp-country-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  opacity: 0;
+  transform: translateX(-40px);
+  animation: slideRight 0.6s ease 1.3s forwards;
+}
+.sp-flag { font-size: 1.6rem; }
+.sp-country-name {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.65);
+  text-transform: uppercase;
+}
+
+/* Number badge */
+.sp-number {
+  font-size: clamp(4.5rem, 14vw, 9rem);
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255,255,255,0.12);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  position: absolute;
+  right: 5vw;
+  bottom: 22%;
+  opacity: 0;
+  animation: fadeInNum 1s ease 1.2s forwards;
+  user-select: none;
+}
+@keyframes fadeInNum { to { opacity: 1; } }
+
+/* Player name — LARGE glitch-style */
+.sp-player-name {
+  font-size: clamp(2.8rem, 8vw, 6.5rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  text-shadow: 0 0 60px rgba(16,185,129,0.4), 0 4px 30px rgba(0,0,0,0.8);
+  opacity: 0;
+  transform: translateY(30px) skewX(-2deg);
+  animation: revealName 0.7s cubic-bezier(0.22,1,0.36,1) 1.4s forwards;
+}
+@keyframes revealName {
+  to { opacity: 1; transform: translateY(0) skewX(0); }
+}
+
+/* Accent line under name */
+.sp-name-line {
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6, transparent);
+  margin: 0.6rem 0 0.5rem;
+  border-radius: 2px;
+  animation: growLine 0.7s ease 1.9s forwards;
+}
+@keyframes growLine { to { width: min(380px, 80vw); } }
+
+/* Subtitle */
+.sp-subtitle {
+  font-size: clamp(0.95rem, 2.5vw, 1.4rem);
+  font-weight: 600;
+  color: #10b981;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 2.0s forwards;
+}
+
+/* Stats row */
+.sp-stats {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 1.2rem 0 1.8rem;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 2.2s forwards;
+  max-width: 480px;
+}
+
+.sp-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.4rem 0 0;
+}
+.sp-stat:not(:last-child) {
+  border-right: 1px solid rgba(255,255,255,0.2);
+  margin-right: 1.4rem;
+}
+.sp-stat-num {
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  font-family: 'Outfit', sans-serif;
+}
+.sp-stat-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+/* CTA / Enter Button */
+.sp-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 2.5s forwards;
+}
+
+.sp-enter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  letter-spacing: 0.05em;
+  border: none;
+  padding: 0.9rem 2.2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(16,185,129,0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: pulseCta 2s ease 3s infinite;
+}
+@keyframes pulseCta {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  50%      { box-shadow: 0 0 0 14px rgba(16,185,129,0); }
+}
+.sp-enter-btn:hover {
+  transform: scale(1.06) translateY(-2px);
+}
+.sp-enter-btn i { font-size: 1.1rem; }
+
+.sp-skip-link {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.sp-skip-link:hover { color: rgba(255,255,255,0.7); }
+
+/* App branding — top right */
+.sp-brand-badge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fadeDown 0.6s ease 0.8s forwards;
+}
+.sp-brand-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.1rem;
+}
+.sp-brand-text { line-height: 1.1; }
+.sp-brand-name  { font-size: 0.85rem; font-weight: 900; color: #fff; letter-spacing: 0.04em; }
+.sp-brand-sub   { font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Green glow ring */
+.sp-glow-ring {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  z-index: 11;
+  opacity: 0;
+  animation: fadeDown 0.6s ease 0.8s forwards;
+}
+.sp-psl-badge {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.5);
+  color: #10b981;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Shared animations */
+@keyframes slideRight { to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeUp     { to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeDown   { to { opacity: 1; } }
+
+/* ============================================================
+   PROGRESS BAR (auto-close countdown)
+   ============================================================ */
+.sp-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+  z-index: 20;
+  width: 0%;
+  animation: progressFill 5s linear 1.2s forwards;
+}
+@keyframes progressFill { to { width: 100%; } }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .sp-content { padding: 4vw 5vw 8vw; }
+  .sp-number   { display: none; }
+  .sp-stats    { gap: 0; }
+  .sp-stat     { padding-right: 1rem; margin-right: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .sp-player-name { font-size: 2.4rem; }
+  .sp-enter-btn   { padding: 0.8rem 1.5rem; }
+}

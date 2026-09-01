@@ -16,50 +16,108 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="styles.css">
+  <!-- Cinematic Splash Intro Styles -->
+  <link rel="stylesheet" href="splash.css">
 </head>
 <body>
 
-  <!-- HD Babar Azam Real Photo Splash Intro Screen -->
-  <div id="app-splash-screen" class="splash-overlay">
-    <!-- Full-screen HD background photo -->
-    <div class="splash-photo-bg">
-      <img src="babar_azam.jpg" alt="Babar Azam Cover Drive" class="splash-photo-img" />
-      <div class="splash-photo-dim"></div>
+  <!-- ═══════════════════════════════════════════════════════════════
+       CRICSCORER PRO — CINEMATIC ANIMATED OPENING SPLASH
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="app-splash-screen">
+
+    <!-- LAYER 1: Full-Bleed HD Photo with Ken Burns -->
+    <div class="sp-photo-layer">
+      <img src="babar_azam.jpg" alt="Pakistan Cricket — Babar Azam" class="sp-photo">
     </div>
 
-    <!-- Animated ball flying at screen -->
-    <div class="splash-ball-impact" id="splash-ball"></div>
+    <!-- LAYER 2: Gradient Overlays (cinematic dark sides) -->
+    <div class="sp-gradient-left"></div>
+    <div class="sp-gradient-bottom"></div>
 
-    <!-- Shatter lines on impact -->
-    <div class="splash-shatter" id="splash-shatter">
-      <div class="shard s1"></div>
-      <div class="shard s2"></div>
-      <div class="shard s3"></div>
-      <div class="shard s4"></div>
-      <div class="shard s5"></div>
-      <div class="shard s6"></div>
-      <div class="shard s7"></div>
-      <div class="shard s8"></div>
+    <!-- LAYER 3: Letterbox bars (slide out revealing photo) -->
+    <div class="sp-bar-top"></div>
+    <div class="sp-bar-bottom"></div>
+
+    <!-- LAYER 4: Canvas — Particle Sparks & Light Streaks -->
+    <canvas id="splash-canvas"></canvas>
+
+    <!-- LAYER 5: Flash on bat impact -->
+    <div class="sp-flash"></div>
+
+    <!-- Top-Left badge -->
+    <div class="sp-glow-ring">
+      <div class="sp-psl-badge">🇵🇰 &nbsp;Pakistan Cricket</div>
     </div>
 
-    <!-- Cinematic Text Overlay (appears after ball impact) -->
-    <div class="splash-text-overlay" id="splash-text-overlay">
-      <div class="splash-pakistan-flag">🇵🇰</div>
-      <div class="splash-player-badge">BABAR AZAM</div>
-      <div class="splash-hero-title">Cover Drive<br><span>King of Pakistan</span></div>
-      <div class="splash-stat-row">
-        <div class="splash-stat"><span class="s-num">10,000+</span><span class="s-lbl">ODI Runs</span></div>
-        <div class="splash-stat-div"></div>
-        <div class="splash-stat"><span class="s-num">#1</span><span class="s-lbl">ICC Ranking</span></div>
-        <div class="splash-stat-div"></div>
-        <div class="splash-stat"><span class="s-num">30+</span><span class="s-lbl">Centuries</span></div>
+    <!-- Top-Right brand -->
+    <div class="sp-brand-badge">
+      <div class="sp-brand-icon"><i class="fa-solid fa-trophy"></i></div>
+      <div class="sp-brand-text">
+        <div class="sp-brand-name">CRICSCORER PRO</div>
+        <div class="sp-brand-sub">Tournament Management</div>
       </div>
-      <p class="splash-app-label">Cricket Tournament Scorer & Management System</p>
-      <button class="splash-enter-btn" onclick="app.closeSplashScreen()">
-        <i class="fa-solid fa-cricket-bat-ball"></i> Enter CricScorer Pro
-      </button>
     </div>
-  </div>
+
+    <!-- LAYER 6: Main content — bottom-left layout -->
+    <div class="sp-content">
+
+      <!-- Country row -->
+      <div class="sp-country-row">
+        <span class="sp-flag">🇵🇰</span>
+        <span class="sp-country-name">Pakistan — No. 1 Test Nation</span>
+      </div>
+
+      <!-- Ghost number -->
+      <div class="sp-number">#1</div>
+
+      <!-- Big player name -->
+      <div class="sp-player-name">Babar<br>Azam</div>
+
+      <!-- Accent line -->
+      <div class="sp-name-line"></div>
+
+      <!-- Subtitle -->
+      <div class="sp-subtitle">Cover Drive · King of Pakistan Cricket</div>
+
+      <!-- Stats row -->
+      <div class="sp-stats">
+        <div class="sp-stat">
+          <span class="sp-stat-num">10,458</span>
+          <span class="sp-stat-lbl">ODI Runs</span>
+        </div>
+        <div class="sp-stat">
+          <span class="sp-stat-num">35+</span>
+          <span class="sp-stat-lbl">Centuries</span>
+        </div>
+        <div class="sp-stat">
+          <span class="sp-stat-num">#1</span>
+          <span class="sp-stat-lbl">ICC ODI Rank</span>
+        </div>
+        <div class="sp-stat">
+          <span class="sp-stat-num">57.4</span>
+          <span class="sp-stat-lbl">Avg (ODI)</span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="sp-cta-row">
+        <button class="sp-enter-btn" onclick="app.closeSplashScreen()">
+          <i class="fa-solid fa-cricket-bat-ball"></i>
+          Enter CricScorer Pro
+        </button>
+        <span class="sp-skip-link" onclick="app.closeSplashScreen()">Skip intro</span>
+      </div>
+
+    </div><!-- /.sp-content -->
+
+    <!-- Auto-close progress bar -->
+    <div class="sp-progress-bar"></div>
+
+    <!-- Canvas particle script (inline-loaded) -->
+    <script src="splash-particles.js"></script>
+
+  </div><!-- /#app-splash-screen -->
 
   <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.closeSidebar()"></div>
 
