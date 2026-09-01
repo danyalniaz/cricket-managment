@@ -67,12 +67,18 @@
     <!-- Sidebar Navigation -->
     <sidebar id="sidebar">
       <div class="brand-container">
-        <div class="brand-icon">
-          <i class="fa-solid fa-trophy"></i>
+        <!-- 3D Animated Brand Logo -->
+        <div class="brand-icon-3d">
+          <div class="icon-cube">
+            <div class="cube-face cube-front"><i class="fa-solid fa-trophy"></i></div>
+            <div class="cube-face cube-back"><i class="fa-solid fa-cricket-bat-ball"></i></div>
+            <div class="cube-face cube-top"><i class="fa-solid fa-star"></i></div>
+            <div class="cube-face cube-bottom"><i class="fa-solid fa-medal"></i></div>
+          </div>
         </div>
         <div class="brand-title">
-          CRICSCORER
-          <span>PRO MANAGEMENT</span>
+          <span id="brand-name-display">CRICSCORER</span>
+          <span class="brand-sub">PRO MANAGEMENT</span>
         </div>
       </div>
 
@@ -112,6 +118,9 @@
         </li>
         <li class="nav-item" data-view="settings">
           <a href="#"><i class="fa-solid fa-database"></i> Data & Admin</a>
+        </li>
+        <li class="nav-item nav-admin" id="nav-admin-btn" onclick="app.openAdminLogin()">
+          <a href="#"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a>
         </li>
       </ul>
 
@@ -1297,6 +1306,190 @@
       </div>
       <div id="player-profile-body">
         <!-- Content rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ADMIN LOGIN MODAL
+       ============================================================ -->
+  <div id="admin-login-modal" class="modal-backdrop">
+    <div class="modal-content admin-login-card">
+      <div class="admin-login-header">
+        <div class="admin-login-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2>Admin Access</h2>
+        <p>Enter your password to access the Admin Panel</p>
+      </div>
+      <div class="form-group" style="margin-top:1.5rem;">
+        <label>Admin Password</label>
+        <div style="position:relative;">
+          <input type="password" id="admin-password-input" class="form-control" placeholder="Enter password..." autocomplete="off">
+          <button onclick="app.toggleAdminPwdVisibility()" style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;">
+            <i class="fa-solid fa-eye" id="admin-eye-icon"></i>
+          </button>
+        </div>
+      </div>
+      <div id="admin-login-error" style="color:var(--danger);font-size:0.85rem;margin-bottom:0.5rem;display:none;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Incorrect password. Try again.
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+        <button class="btn btn-primary" style="flex:1;" onclick="app.verifyAdminLogin()">
+          <i class="fa-solid fa-unlock"></i> Login
+        </button>
+        <button class="btn btn-secondary" onclick="app.closeModal('admin-login-modal')">Cancel</button>
+      </div>
+      <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">
+        Default password: <code style="color:var(--primary);">admin123</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FULL-SCREEN ADMIN PANEL (Editor + Live Preview)
+       ============================================================ -->
+  <div id="admin-panel-screen" class="admin-panel-overlay" style="display:none;">
+    <!-- Admin Top Bar -->
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <div class="admin-topbar-logo"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <div class="admin-topbar-title">CricScorer Admin Panel</div>
+          <div class="admin-topbar-sub">Website Editor & Live Preview</div>
+        </div>
+      </div>
+      <div class="admin-topbar-actions">
+        <button class="btn btn-primary" onclick="app.applyAdminChanges()">
+          <i class="fa-solid fa-floppy-disk"></i> Save & Apply
+        </button>
+        <button class="btn btn-danger" onclick="app.closeAdminPanel()">
+          <i class="fa-solid fa-xmark"></i> Exit Admin
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Split Pane -->
+    <div class="admin-split-pane">
+
+      <!-- LEFT: Editor Panel -->
+      <div class="admin-editor-panel">
+        <div class="admin-editor-scroll">
+
+          <div class="admin-section-label"><i class="fa-solid fa-palette"></i> Branding</div>
+          <div class="form-group">
+            <label>Website / Brand Name</label>
+            <input type="text" id="adm-brand-name" class="form-control" placeholder="CRICSCORER" oninput="app.adminLivePreview()">
+          </div>
+          <div class="form-group">
+            <label>Brand Subtitle</label>
+            <input type="text" id="adm-brand-sub" class="form-control" placeholder="PRO MANAGEMENT" oninput="app.adminLivePreview()">
+          </div>
+          <div class="form-group">
+            <label>Dashboard Welcome Message</label>
+            <input type="text" id="adm-welcome-msg" class="form-control" placeholder="Welcome to CricScorer Pro!" oninput="app.adminLivePreview()">
+          </div>
+
+          <div class="admin-section-label"><i class="fa-solid fa-droplet"></i> Colors</div>
+          <div class="admin-color-grid">
+            <div class="form-group">
+              <label>Primary Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-primary-color" class="color-input" value="#10b981" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-primary-color-hex" class="form-control" value="#10b981" oninput="app.syncColorFromText('adm-primary-color','adm-primary-color-hex')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Accent / Blue Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-accent-color" class="color-input" value="#3b82f6" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-accent-color-hex" class="form-control" value="#3b82f6" oninput="app.syncColorFromText('adm-accent-color','adm-accent-color-hex')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Background Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-bg-color" class="color-input" value="#0b1120" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-bg-color-hex" class="form-control" value="#0b1120" oninput="app.syncColorFromText('adm-bg-color','adm-bg-color-hex')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Sidebar Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-sidebar-color" class="color-input" value="#0f172a" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-sidebar-color-hex" class="form-control" value="#0f172a" oninput="app.syncColorFromText('adm-sidebar-color','adm-sidebar-color-hex')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Card Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-card-color" class="color-input" value="#1e293b" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-card-color-hex" class="form-control" value="#1e293b" oninput="app.syncColorFromText('adm-card-color','adm-card-color-hex')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Danger Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="adm-danger-color" class="color-input" value="#ef4444" oninput="app.adminLivePreview()">
+                <input type="text" id="adm-danger-color-hex" class="form-control" value="#ef4444" oninput="app.syncColorFromText('adm-danger-color','adm-danger-color-hex')">
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-section-label"><i class="fa-solid fa-font"></i> Typography</div>
+          <div class="form-group">
+            <label>Font Family</label>
+            <select id="adm-font-family" class="form-control" onchange="app.adminLivePreview()">
+              <option value="'Inter', sans-serif">Inter (Default)</option>
+              <option value="'Outfit', sans-serif">Outfit</option>
+              <option value="'Poppins', sans-serif">Poppins</option>
+              <option value="'Roboto', sans-serif">Roboto</option>
+              <option value="'Montserrat', sans-serif">Montserrat</option>
+              <option value="'Raleway', sans-serif">Raleway</option>
+            </select>
+          </div>
+
+          <div class="admin-section-label"><i class="fa-solid fa-lock"></i> Security</div>
+          <div class="form-group">
+            <label>Change Admin Password</label>
+            <input type="password" id="adm-new-password" class="form-control" placeholder="Enter new password...">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="adm-confirm-password" class="form-control" placeholder="Confirm new password...">
+          </div>
+          <button class="btn btn-accent" onclick="app.changeAdminPassword()" style="width:100%;margin-bottom:1rem;">
+            <i class="fa-solid fa-key"></i> Update Password
+          </button>
+
+          <div class="admin-section-label"><i class="fa-solid fa-rotate-left"></i> Reset</div>
+          <button class="btn btn-secondary" onclick="app.resetAdminDefaults()" style="width:100%;margin-bottom:0.5rem;">
+            <i class="fa-solid fa-arrow-rotate-left"></i> Reset to Defaults
+          </button>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Live Preview iframe -->
+      <div class="admin-preview-panel">
+        <div class="admin-preview-topbar">
+          <div class="preview-url-bar">
+            <i class="fa-solid fa-circle" style="color:#ef4444;font-size:0.5rem;"></i>
+            <i class="fa-solid fa-circle" style="color:#f59e0b;font-size:0.5rem;"></i>
+            <i class="fa-solid fa-circle" style="color:#10b981;font-size:0.5rem;"></i>
+            <span class="preview-url-text">localhost — CricScorer Pro (Live Preview)</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="app.refreshAdminPreview()">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+        <div class="admin-preview-frame-wrap">
+          <iframe id="admin-preview-iframe" class="admin-preview-iframe" src="index.html" title="Live Preview"></iframe>
+          <!-- Live CSS injection overlay indicator -->
+          <div id="preview-live-indicator" class="preview-live-dot">
+            <span class="live-pulse"></span> LIVE
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@
    ========================================================================== */
 
 const STORAGE_KEY = 'CRICKET_TOURNAMENT_DB_V3';
+const ADMIN_STORAGE_KEY = 'CRICKET_ADMIN_SETTINGS_V1';
 
 class CricketApp {
   constructor() {
@@ -25,6 +26,10 @@ class CricketApp {
       activeMatch: null
     };
 
+    // Admin settings (stored separately)
+    this.adminSettings = this.loadAdminSettings();
+
+
     this.charts = {};
     this.navigationStack = [];
     this.currentView = null;
@@ -40,7 +45,11 @@ class CricketApp {
     this.bindEvents();
     this.renderAll();
     this.switchView('dashboard');
+    this.applyAdminTheme(this.adminSettings);
     this.playSplashScreen();
+    // Init 3D card tilt after a small delay so DOM is ready
+    setTimeout(() => this.init3DCardTilt(), 500);
+
   }
 
   /* ==========================================================================
@@ -66,6 +75,308 @@ class CricketApp {
       setTimeout(() => { splash.style.display = 'none'; }, 750);
     }
     if (this.splashTimer) clearTimeout(this.splashTimer);
+  }
+
+  /* ==========================================================================
+     ADMIN SETTINGS — LOCALSTORAGE
+     ========================================================================== */
+  loadAdminSettings() {
+    try {
+      const raw = localStorage.getItem(ADMIN_STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return {
+      password: 'admin123',
+      brandName: 'CRICSCORER',
+      brandSub: 'PRO MANAGEMENT',
+      welcomeMsg: 'Welcome to CricScorer Pro!',
+      primaryColor: '#10b981',
+      accentColor: '#3b82f6',
+      bgColor: '#0b1120',
+      sidebarColor: '#0f172a',
+      cardColor: '#1e293b',
+      dangerColor: '#ef4444',
+      fontFamily: "'Inter', sans-serif"
+    };
+  }
+
+  saveAdminSettings() {
+    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(this.adminSettings));
+  }
+
+  applyAdminTheme(settings) {
+    const root = document.documentElement;
+    root.style.setProperty('--primary', settings.primaryColor);
+    root.style.setProperty('--primary-hover', this.darken(settings.primaryColor, 10));
+    root.style.setProperty('--accent', settings.accentColor);
+    root.style.setProperty('--bg-main', settings.bgColor);
+    root.style.setProperty('--bg-sidebar', settings.sidebarColor);
+    root.style.setProperty('--bg-card', settings.cardColor);
+    root.style.setProperty('--danger', settings.dangerColor);
+    document.body.style.fontFamily = settings.fontFamily;
+
+    // Update brand name
+    const brandEl = document.getElementById('brand-name-display');
+    if (brandEl) brandEl.textContent = settings.brandName || 'CRICSCORER';
+    const brandSub = document.querySelector('.brand-sub');
+    if (brandSub) brandSub.textContent = settings.brandSub || 'PRO MANAGEMENT';
+  }
+
+  darken(hex, percent) {
+    try {
+      let r = parseInt(hex.slice(1,3),16);
+      let g = parseInt(hex.slice(3,5),16);
+      let b = parseInt(hex.slice(5,7),16);
+      r = Math.max(0, r - Math.round(r * percent/100));
+      g = Math.max(0, g - Math.round(g * percent/100));
+      b = Math.max(0, b - Math.round(b * percent/100));
+      return `rgb(${r},${g},${b})`;
+    } catch(e) { return hex; }
+  }
+
+  /* ==========================================================================
+     ADMIN PANEL — LOGIN & CONTROLS
+     ========================================================================== */
+  openAdminLogin() {
+    const modal = document.getElementById('admin-login-modal');
+    if (modal) {
+      modal.classList.add('active');
+      const inp = document.getElementById('admin-password-input');
+      if (inp) { inp.value = ''; inp.focus(); }
+      const err = document.getElementById('admin-login-error');
+      if (err) err.style.display = 'none';
+    }
+  }
+
+  toggleAdminPwdVisibility() {
+    const inp = document.getElementById('admin-password-input');
+    const ico = document.getElementById('admin-eye-icon');
+    if (!inp) return;
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      if (ico) { ico.className = 'fa-solid fa-eye-slash'; }
+    } else {
+      inp.type = 'password';
+      if (ico) { ico.className = 'fa-solid fa-eye'; }
+    }
+  }
+
+  verifyAdminLogin() {
+    const inp = document.getElementById('admin-password-input');
+    const err = document.getElementById('admin-login-error');
+    if (!inp) return;
+    const entered = inp.value.trim();
+    if (entered === this.adminSettings.password) {
+      this.closeModal('admin-login-modal');
+      this.openAdminPanel();
+    } else {
+      if (err) { err.style.display = 'block'; }
+      inp.value = '';
+      inp.focus();
+      inp.style.borderColor = 'var(--danger)';
+      setTimeout(() => { inp.style.borderColor = ''; }, 1500);
+    }
+  }
+
+  openAdminPanel() {
+    const panel = document.getElementById('admin-panel-screen');
+    if (!panel) return;
+    panel.style.display = 'flex';
+    // Populate editor with current settings
+    const s = this.adminSettings;
+    this.setVal('adm-brand-name', s.brandName);
+    this.setVal('adm-brand-sub', s.brandSub);
+    this.setVal('adm-welcome-msg', s.welcomeMsg);
+    this.setColorVal('adm-primary-color', 'adm-primary-color-hex', s.primaryColor);
+    this.setColorVal('adm-accent-color', 'adm-accent-color-hex', s.accentColor);
+    this.setColorVal('adm-bg-color', 'adm-bg-color-hex', s.bgColor);
+    this.setColorVal('adm-sidebar-color', 'adm-sidebar-color-hex', s.sidebarColor);
+    this.setColorVal('adm-card-color', 'adm-card-color-hex', s.cardColor);
+    this.setColorVal('adm-danger-color', 'adm-danger-color-hex', s.dangerColor);
+    const fontSel = document.getElementById('adm-font-family');
+    if (fontSel) fontSel.value = s.fontFamily;
+    // Load iframe
+    this.refreshAdminPreview();
+  }
+
+  setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  }
+
+  setColorVal(colorId, hexId, val) {
+    const c = document.getElementById(colorId);
+    const h = document.getElementById(hexId);
+    if (c) c.value = val || '#10b981';
+    if (h) h.value = val || '#10b981';
+  }
+
+  closeAdminPanel() {
+    const panel = document.getElementById('admin-panel-screen');
+    if (panel) panel.style.display = 'none';
+  }
+
+  refreshAdminPreview() {
+    const iframe = document.getElementById('admin-preview-iframe');
+    if (iframe) {
+      iframe.src = 'index.html?' + Date.now();
+    }
+  }
+
+  adminLivePreview() {
+    // Update hex text boxes from color pickers and vice versa
+    const syncPairs = [
+      ['adm-primary-color', 'adm-primary-color-hex'],
+      ['adm-accent-color', 'adm-accent-color-hex'],
+      ['adm-bg-color', 'adm-bg-color-hex'],
+      ['adm-sidebar-color', 'adm-sidebar-color-hex'],
+      ['adm-card-color', 'adm-card-color-hex'],
+      ['adm-danger-color', 'adm-danger-color-hex'],
+    ];
+    syncPairs.forEach(([cId, hId]) => {
+      const c = document.getElementById(cId);
+      const h = document.getElementById(hId);
+      if (c && h) h.value = c.value;
+    });
+
+    // Inject CSS directly into iframe for live preview
+    const iframe = document.getElementById('admin-preview-iframe');
+    if (iframe && iframe.contentDocument) {
+      try {
+        const iDoc = iframe.contentDocument;
+        let styleEl = iDoc.getElementById('admin-live-style');
+        if (!styleEl) {
+          styleEl = iDoc.createElement('style');
+          styleEl.id = 'admin-live-style';
+          iDoc.head.appendChild(styleEl);
+        }
+        const primary = document.getElementById('adm-primary-color')?.value || '#10b981';
+        const accent  = document.getElementById('adm-accent-color')?.value  || '#3b82f6';
+        const bg      = document.getElementById('adm-bg-color')?.value       || '#0b1120';
+        const sidebar = document.getElementById('adm-sidebar-color')?.value  || '#0f172a';
+        const card    = document.getElementById('adm-card-color')?.value     || '#1e293b';
+        const danger  = document.getElementById('adm-danger-color')?.value   || '#ef4444';
+        const font    = document.getElementById('adm-font-family')?.value    || "'Inter', sans-serif";
+        const brandName = document.getElementById('adm-brand-name')?.value || 'CRICSCORER';
+        const brandSub  = document.getElementById('adm-brand-sub')?.value   || 'PRO MANAGEMENT';
+
+        styleEl.textContent = `:root {
+          --primary: ${primary};
+          --accent: ${accent};
+          --bg-main: ${bg};
+          --bg-sidebar: ${sidebar};
+          --bg-card: ${card};
+          --danger: ${danger};
+        }
+        body { font-family: ${font}; }`;
+
+        // Update brand name in iframe
+        const bName = iDoc.getElementById('brand-name-display');
+        if (bName) bName.textContent = brandName;
+        const bSub = iDoc.querySelector('.brand-sub');
+        if (bSub) bSub.textContent = brandSub;
+      } catch(e) { /* cross-origin restriction */ }
+    }
+  }
+
+  syncColorFromText(colorId, hexId) {
+    const h = document.getElementById(hexId);
+    const c = document.getElementById(colorId);
+    if (h && c) {
+      const val = h.value.trim();
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        c.value = val;
+        this.adminLivePreview();
+      }
+    }
+  }
+
+  applyAdminChanges() {
+    const s = this.adminSettings;
+    s.brandName     = document.getElementById('adm-brand-name')?.value.trim() || 'CRICSCORER';
+    s.brandSub      = document.getElementById('adm-brand-sub')?.value.trim()  || 'PRO MANAGEMENT';
+    s.welcomeMsg    = document.getElementById('adm-welcome-msg')?.value.trim() || '';
+    s.primaryColor  = document.getElementById('adm-primary-color')?.value  || '#10b981';
+    s.accentColor   = document.getElementById('adm-accent-color')?.value   || '#3b82f6';
+    s.bgColor       = document.getElementById('adm-bg-color')?.value       || '#0b1120';
+    s.sidebarColor  = document.getElementById('adm-sidebar-color')?.value  || '#0f172a';
+    s.cardColor     = document.getElementById('adm-card-color')?.value     || '#1e293b';
+    s.dangerColor   = document.getElementById('adm-danger-color')?.value   || '#ef4444';
+    s.fontFamily    = document.getElementById('adm-font-family')?.value    || "'Inter', sans-serif";
+    this.saveAdminSettings();
+    this.applyAdminTheme(s);
+    this.showToast('✅ Admin changes applied & saved!', 'success');
+  }
+
+  changeAdminPassword() {
+    const newPwd     = document.getElementById('adm-new-password')?.value.trim();
+    const confirmPwd = document.getElementById('adm-confirm-password')?.value.trim();
+    if (!newPwd)                     { this.showToast('⚠️ Enter a new password.', 'warning'); return; }
+    if (newPwd.length < 6)           { this.showToast('⚠️ Password must be at least 6 characters.', 'warning'); return; }
+    if (newPwd !== confirmPwd)        { this.showToast('❌ Passwords do not match.', 'error'); return; }
+    this.adminSettings.password = newPwd;
+    this.saveAdminSettings();
+    document.getElementById('adm-new-password').value = '';
+    document.getElementById('adm-confirm-password').value = '';
+    this.showToast('🔒 Admin password updated!', 'success');
+  }
+
+  resetAdminDefaults() {
+    if (!confirm('Reset all admin theme settings to defaults?')) return;
+    this.adminSettings = {
+      password: this.adminSettings.password, // keep password
+      brandName: 'CRICSCORER', brandSub: 'PRO MANAGEMENT', welcomeMsg: 'Welcome to CricScorer Pro!',
+      primaryColor: '#10b981', accentColor: '#3b82f6', bgColor: '#0b1120',
+      sidebarColor: '#0f172a', cardColor: '#1e293b', dangerColor: '#ef4444',
+      fontFamily: "'Inter', sans-serif"
+    };
+    this.saveAdminSettings();
+    this.openAdminPanel(); // re-populate fields
+    this.applyAdminTheme(this.adminSettings);
+    this.showToast('🔄 Defaults restored!', 'success');
+  }
+
+  /* ==========================================================================
+     3D CARD PARALLAX TILT
+     ========================================================================== */
+  init3DCardTilt() {
+    const applyTilt = (el) => {
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+        const rx = -dy * 8;  // max 8deg tilt
+        const ry =  dx * 8;
+        el.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
+        el.style.boxShadow = `${-ry*2}px ${rx*2}px 24px rgba(16,185,129,0.18)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = '';
+        el.style.boxShadow = '';
+      });
+    };
+    document.querySelectorAll('.stat-card, .quick-action-btn').forEach(applyTilt);
+  }
+
+  /* ==========================================================================
+     TOAST NOTIFICATION HELPER
+     ========================================================================== */
+  showToast(msg, type='info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:999999;display:flex;flex-direction:column;gap:0.5rem;';
+      document.body.appendChild(container);
+    }
+    const t = document.createElement('div');
+    const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+    t.style.cssText = `background:#1e293b;border:1px solid ${colors[type]||'#3b82f6'};color:#f8fafc;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.5);animation:fadeIn 0.25s ease;max-width:320px;`;
+    t.textContent = msg;
+    container.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(30px)'; t.style.transition='all 0.3s ease'; setTimeout(()=>t.remove(), 350); }, 3000);
   }
 
   /* ==========================================================================
@@ -590,6 +901,8 @@ class CricketApp {
     this.renderTournamentDropdown();
     this.renderDashboard();
     this.renderPointsTable();
+    // Re-bind 3D tilt on newly rendered cards
+    setTimeout(() => this.init3DCardTilt(), 100);
   }
 
   /* ==========================================================================

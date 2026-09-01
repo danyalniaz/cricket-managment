@@ -95,6 +95,337 @@ body {
 }
 
 /* ==========================================================================
+   3D ANIMATED BRAND LOGO (Rotating Cube)
+   ========================================================================== */
+.brand-icon-3d {
+  width: 46px;
+  height: 46px;
+  perspective: 200px;
+  flex-shrink: 0;
+}
+
+.icon-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotateCube 6s infinite linear;
+  border-radius: 10px;
+}
+
+@keyframes rotateCube {
+  0%   { transform: rotateX(0deg) rotateY(0deg); }
+  25%  { transform: rotateX(0deg) rotateY(90deg); }
+  50%  { transform: rotateX(90deg) rotateY(90deg); }
+  75%  { transform: rotateX(90deg) rotateY(180deg); }
+  100% { transform: rotateX(0deg) rotateY(360deg); }
+}
+
+.cube-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.cube-front  {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  transform: translateZ(23px);
+}
+.cube-back   {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  transform: rotateY(180deg) translateZ(23px);
+}
+.cube-top    {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #fff;
+  transform: rotateX(90deg) translateZ(23px);
+}
+.cube-bottom {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  transform: rotateX(-90deg) translateZ(23px);
+}
+
+.brand-title {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-main);
+}
+
+.brand-sub {
+  font-size: 0.65rem;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* 3D Card Tilt on Hover */
+.stat-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Admin Nav Item */
+.nav-admin a {
+  background: linear-gradient(90deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1));
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5 !important;
+}
+.nav-admin:hover a {
+  background: linear-gradient(90deg, rgba(239,68,68,0.25), rgba(245,158,11,0.2)) !important;
+  color: #fff !important;
+}
+
+/* ==========================================================================
+   ADMIN LOGIN MODAL CARD
+   ========================================================================== */
+.admin-login-card {
+  max-width: 420px;
+  text-align: center;
+}
+
+.admin-login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-login-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--danger), #f97316);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 0.25rem;
+  box-shadow: 0 8px 24px rgba(239,68,68,0.35);
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ==========================================================================
+   FULL-SCREEN ADMIN PANEL
+   ========================================================================== */
+.admin-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 98000;
+  background: #060c17;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Admin Top Bar */
+.admin-topbar {
+  height: 60px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-bottom: 1px solid rgba(239,68,68,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+}
+
+.admin-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-topbar-logo {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.admin-topbar-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #f8fafc;
+  font-family: 'Outfit', sans-serif;
+}
+
+.admin-topbar-sub {
+  font-size: 0.72rem;
+  color: rgba(239,68,68,0.7);
+  font-weight: 600;
+}
+
+.admin-topbar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Split Pane */
+.admin-split-pane {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Editor Panel (Left) */
+.admin-editor-panel {
+  background: #0f172a;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-editor-scroll {
+  overflow-y: auto;
+  padding: 1.25rem 1.25rem 2rem;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.admin-section-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+  padding: 0.85rem 0 0.5rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(16,185,129,0.15);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-color-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-input {
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  background: var(--bg-input);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Preview Panel (Right) */
+.admin-preview-panel {
+  display: flex;
+  flex-direction: column;
+  background: #0a0f1a;
+  overflow: hidden;
+}
+
+.admin-preview-topbar {
+  height: 40px;
+  background: #1a2234;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+.preview-url-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.05);
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  flex: 1;
+  max-width: 500px;
+}
+
+.preview-url-text {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+  flex: 1;
+}
+
+.admin-preview-frame-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+  pointer-events: auto;
+}
+
+/* Live indicator dot */
+.preview-live-dot {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(16,185,129,0.15);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  letter-spacing: 0.05em;
+}
+
+.live-pulse {
+  width: 7px;
+  height: 7px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: pulse 1.2s infinite;
+  display: inline-block;
+}
+
+
+
+/* ==========================================================================
    HD SPLASH INTRO SCREEN — REAL PHOTO (BABAR AZAM COVER DRIVE)
    ========================================================================== */
 .splash-overlay {
