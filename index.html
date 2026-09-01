@@ -177,6 +177,9 @@
         <li class="nav-item" data-view="settings">
           <a href="#"><i class="fa-solid fa-database"></i> Data & Admin</a>
         </li>
+        <li class="nav-item" data-view="config-settings">
+          <a href="#"><i class="fa-solid fa-sliders"></i> Settings</a>
+        </li>
         <li class="nav-item nav-admin" id="nav-admin-btn" onclick="app.openAdminLogin()">
           <a href="#"><i class="fa-solid fa-shield-halved"></i> Admin Panel</a>
         </li>
@@ -405,12 +408,19 @@
             </div>
           </div>
 
-          <!-- ═══ DASHBOARD BOTTOM SETTINGS ═══ -->
-          <div id="dashboard-settings-section">
-            <!-- Rendered dynamically by renderDashboard() -->
-          </div>
-
         </section>
+
+        <!-- 1.5 SETTINGS VIEW -->
+        <section id="view-config-settings" class="view-section" style="display: none;">
+          <div class="view-header">
+            <h2><i class="fa-solid fa-sliders"></i> System Settings</h2>
+            <p>Configure scoring rules, display preferences, and tournament defaults.</p>
+          </div>
+          <div id="dedicated-settings-section">
+            <!-- Rendered dynamically by renderSettings() -->
+          </div>
+        </section>
+
 
         <!-- 2. LIVE SCORER VIEW -->
         <section id="view-live-scorer" class="view-section">

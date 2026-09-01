@@ -1131,6 +1131,7 @@ class CricketApp {
         'knockout': 'Playoff Bracket & Finals',
         'setup': 'Tournament Setup',
         'settings': 'Data Management & Backup',
+        'config-settings': 'System Settings & Config',
         'scorecard': 'Match Scorecard'
       };
       titleElem.textContent = titleMap[viewId] || 'Cricket Scorer Pro';
@@ -1151,6 +1152,7 @@ class CricketApp {
     else if (viewId === 'records') this.renderRecordsView();
     else if (viewId === 'knockout') this.renderKnockoutView();
     else if (viewId === 'setup') this.populateSetupForm();
+    else if (viewId === 'config-settings') this.renderSettingsView();
   }
 
   goBack() {
@@ -1178,6 +1180,7 @@ class CricketApp {
     this.renderTournamentDropdown();
     this.renderDashboard();
     this.renderPointsTable();
+    this.renderSettingsView();
     // Re-bind 3D tilt on newly rendered cards
     setTimeout(() => this.init3DCardTilt(), 100);
   }
@@ -1268,124 +1271,128 @@ class CricketApp {
       }
     }
 
-    // ─── DASHBOARD BOTTOM SETTINGS PANEL ───
-    const settingsContainer = document.getElementById('dashboard-settings-section');
-    if (settingsContainer) {
-      const s = this.adminSettings;
-      settingsContainer.innerHTML = `
-        <div class="card settings-section-card neon-green">
-          <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-sliders"></i> Quick Settings &amp; Configuration</div>
-            <button class="btn btn-primary btn-sm" onclick="app.saveDashboardSettings()">
-              <i class="fa-solid fa-floppy-disk"></i> Save Settings
-            </button>
+  }
+
+  /* ==========================================================================
+     SETTINGS VIEW
+     ========================================================================== */
+  renderSettingsView() {
+    const settingsContainer = document.getElementById('dedicated-settings-section');
+    if (!settingsContainer) return;
+    const s = this.adminSettings;
+    settingsContainer.innerHTML = `
+      <div class="card settings-section-card neon-green" style="max-width: 900px; margin: 0 auto;">
+        <div class="card-header" style="justify-content: space-between; align-items: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <div class="card-title" style="font-size: 1.25rem;"><i class="fa-solid fa-sliders"></i> Configuration</div>
+          <button class="btn btn-primary" onclick="app.saveDashboardSettings()">
+            <i class="fa-solid fa-floppy-disk"></i> Save All Settings
+          </button>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-group neon-blue">
+            <div class="settings-group-title"><i class="fa-solid fa-cricket-bat-ball"></i> Scoring</div>
+            <div class="setting-row">
+              <span class="setting-label">Default Overs / Match</span>
+              <input type="number" class="setting-input-sm" id="stg-overs" value="${s.defaultOvers||20}" min="1" max="50">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Auto End Over (10 balls)</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-auto-over" ${s.autoEndOver?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Wide = Extra Run</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-wide-run" ${s.wideRun!==false?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">No Ball = Free Hit</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-free-hit" ${s.freeHit!==false?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">DRS Reviews Per Team</span>
+              <input type="number" class="setting-input-sm" id="stg-drs" value="${s.drsPerTeam||2}" min="0" max="5">
+            </div>
           </div>
-          <div class="settings-grid">
-            <div class="settings-group neon-blue">
-              <div class="settings-group-title"><i class="fa-solid fa-cricket-bat-ball"></i> Scoring</div>
-              <div class="setting-row">
-                <span class="setting-label">Default Overs / Match</span>
-                <input type="number" class="setting-input-sm" id="stg-overs" value="${s.defaultOvers||20}" min="1" max="50">
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Auto End Over (10 balls)</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-auto-over" ${s.autoEndOver?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Wide = Extra Run</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-wide-run" ${s.wideRun!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">No Ball = Free Hit</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-free-hit" ${s.freeHit!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">DRS Reviews Per Team</span>
-                <input type="number" class="setting-input-sm" id="stg-drs" value="${s.drsPerTeam||2}" min="0" max="5">
-              </div>
+          <div class="settings-group neon-purple">
+            <div class="settings-group-title"><i class="fa-solid fa-display"></i> Display</div>
+            <div class="setting-row">
+              <span class="setting-label">Theme Mode</span>
+              <select class="setting-select" id="stg-theme">
+                <option value="dark" ${!document.body.classList.contains('light-theme')?'selected':''}>🌙 Dark</option>
+                <option value="light" ${document.body.classList.contains('light-theme')?'selected':''}>☀️ Light</option>
+              </select>
             </div>
-            <div class="settings-group neon-purple">
-              <div class="settings-group-title"><i class="fa-solid fa-display"></i> Display</div>
-              <div class="setting-row">
-                <span class="setting-label">Theme Mode</span>
-                <select class="setting-select" id="stg-theme">
-                  <option value="dark" ${!document.body.classList.contains('light-theme')?'selected':''}>🌙 Dark</option>
-                  <option value="light" ${document.body.classList.contains('light-theme')?'selected':''}>☀️ Light</option>
-                </select>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Recent Matches Shown</span>
-                <input type="number" class="setting-input-sm" id="stg-recent-matches" value="${s.recentMatchCount||3}" min="1" max="10">
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Neon Borders on Cards</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-neon-borders" ${s.neonBorders!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Compact Mode</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-compact" ${s.compactMode?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Show Player Avatars</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-avatars" ${s.showAvatars!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
+            <div class="setting-row">
+              <span class="setting-label">Recent Matches Shown</span>
+              <input type="number" class="setting-input-sm" id="stg-recent-matches" value="${s.recentMatchCount||3}" min="1" max="10">
             </div>
-            <div class="settings-group neon-amber">
-              <div class="settings-group-title"><i class="fa-solid fa-trophy"></i> Tournament Rules</div>
-              <div class="setting-row">
-                <span class="setting-label">Default Format</span>
-                <select class="setting-select" id="stg-format">
-                  <option value="League + Knockout">League + KO</option>
-                  <option value="Round Robin">Round Robin</option>
-                  <option value="Knockout Only">Knockout Only</option>
-                </select>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Points: Win</span>
-                <input type="number" class="setting-input-sm" id="stg-pts-win" value="${s.ptsWin||2}" min="1" max="5">
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Points: Tie / NR</span>
-                <input type="number" class="setting-input-sm" id="stg-pts-tie" value="${s.ptsTie||1}" min="0" max="3">
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">NRR Tiebreaker</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-nrr" ${s.nrrTiebreaker!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Currency</span>
-                <select class="setting-select" id="stg-currency">
-                  <option value="PKR" ${(s.currency||'PKR')==='PKR'?'selected':''}>🇵🇰 PKR</option>
-                  <option value="USD" ${(s.currency||'')==='USD'?'selected':''}>🇺🇸 USD</option>
-                  <option value="INR" ${(s.currency||'')==='INR'?'selected':''}>🇮🇳 INR</option>
-                  <option value="GBP" ${(s.currency||'')==='GBP'?'selected':''}>🇬🇧 GBP</option>
-                </select>
-              </div>
+            <div class="setting-row">
+              <span class="setting-label">Neon Borders on Cards</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-neon-borders" ${s.neonBorders!==false?'checked':''}><span class="toggle-slider"></span></label>
             </div>
-            <div class="settings-group neon-cyan">
-              <div class="settings-group-title"><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Data</div>
-              <div class="setting-row">
-                <span class="setting-label">Auto Backup (Daily)</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-backup" ${s.autoBackup?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Confirm Before Delete</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-confirm-del" ${s.confirmDelete!==false?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row">
-                <span class="setting-label">Public Score Access</span>
-                <label class="toggle-switch"><input type="checkbox" id="stg-public" ${s.publicAccess?'checked':''}><span class="toggle-slider"></span></label>
-              </div>
-              <div class="setting-row" style="padding-top:0.75rem;">
-                <button class="btn btn-secondary btn-sm" onclick="app.exportAllDataJSON()" style="flex:1;font-size:0.78rem;">
-                  <i class="fa-solid fa-download"></i> Export Data
-                </button>
-              </div>
+            <div class="setting-row">
+              <span class="setting-label">Compact Mode</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-compact" ${s.compactMode?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Show Player Avatars</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-avatars" ${s.showAvatars!==false?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="settings-group neon-amber">
+            <div class="settings-group-title"><i class="fa-solid fa-trophy"></i> Tournament Rules</div>
+            <div class="setting-row">
+              <span class="setting-label">Default Format</span>
+              <select class="setting-select" id="stg-format">
+                <option value="League + Knockout" ${(s.defaultFormat||'League + Knockout')==='League + Knockout'?'selected':''}>League + KO</option>
+                <option value="Round Robin" ${(s.defaultFormat||'')==='Round Robin'?'selected':''}>Round Robin</option>
+                <option value="Knockout Only" ${(s.defaultFormat||'')==='Knockout Only'?'selected':''}>Knockout Only</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Points: Win</span>
+              <input type="number" class="setting-input-sm" id="stg-pts-win" value="${s.ptsWin||2}" min="1" max="5">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Points: Tie / NR</span>
+              <input type="number" class="setting-input-sm" id="stg-pts-tie" value="${s.ptsTie||1}" min="0" max="3">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">NRR Tiebreaker</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-nrr" ${s.nrrTiebreaker!==false?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Currency</span>
+              <select class="setting-select" id="stg-currency">
+                <option value="PKR" ${(s.currency||'PKR')==='PKR'?'selected':''}>🇵🇰 PKR</option>
+                <option value="USD" ${(s.currency||'')==='USD'?'selected':''}>🇺🇸 USD</option>
+                <option value="INR" ${(s.currency||'')==='INR'?'selected':''}>🇮🇳 INR</option>
+                <option value="GBP" ${(s.currency||'')==='GBP'?'selected':''}>🇬🇧 GBP</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-group neon-cyan">
+            <div class="settings-group-title"><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Data</div>
+            <div class="setting-row">
+              <span class="setting-label">Auto Backup (Daily)</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-backup" ${s.autoBackup?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Confirm Before Delete</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-confirm-del" ${s.confirmDelete!==false?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Public Score Access</span>
+              <label class="toggle-switch"><input type="checkbox" id="stg-public" ${s.publicAccess?'checked':''}><span class="toggle-slider"></span></label>
+            </div>
+            <div class="setting-row" style="padding-top:0.75rem;">
+              <button class="btn btn-secondary btn-sm" onclick="app.exportAllDataJSON()" style="flex:1;font-size:0.78rem;">
+                <i class="fa-solid fa-download"></i> Export Data
+              </button>
             </div>
           </div>
         </div>
-      `;
-    }
+      </div>
+    `;
   }
 
   /* ==========================================================================
