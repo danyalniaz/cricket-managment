@@ -40,6 +40,45 @@ class CricketApp {
     this.bindEvents();
     this.renderAll();
     this.switchView('dashboard');
+    this.playSplashScreen();
+  }
+
+  /* ==========================================================================
+     SPLASH INTRO ANIMATION (BABAR AZAM SHOT IMPACT)
+     ========================================================================== */
+  playSplashScreen() {
+    const splash = document.getElementById('app-splash-screen');
+    if (!splash) return;
+
+    splash.classList.remove('hidden');
+
+    const ball = splash.querySelector('.flying-cricket-ball');
+    const crack = splash.querySelector('.glass-crack-effect');
+
+    if (ball) {
+      ball.style.animation = 'none';
+      ball.offsetHeight;
+      ball.style.animation = 'zoomBallToScreen 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+    }
+
+    if (crack) {
+      crack.style.animation = 'none';
+      crack.offsetHeight;
+      crack.style.animation = 'crackScreen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.25s forwards';
+    }
+
+    if (this.splashTimer) clearTimeout(this.splashTimer);
+    this.splashTimer = setTimeout(() => {
+      this.closeSplashScreen();
+    }, 2300);
+  }
+
+  closeSplashScreen() {
+    const splash = document.getElementById('app-splash-screen');
+    if (splash) {
+      splash.classList.add('hidden');
+    }
+    if (this.splashTimer) clearTimeout(this.splashTimer);
   }
 
   /* ==========================================================================

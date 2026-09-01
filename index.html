@@ -19,6 +19,49 @@
 </head>
 <body>
 
+  <!-- Animated App Intro Splash Screen (Babar Azam Shot Impact) -->
+  <div id="app-splash-screen" class="splash-overlay">
+    <div class="splash-bg-glow"></div>
+    <div class="splash-container">
+      <div class="splash-badge"><i class="fa-solid fa-trophy"></i> PAKISTAN PREMIER CRICKET</div>
+      
+      <div class="splash-batter-graphic">
+        <!-- SVG Cricket Shot Animation with Batter & Ball zooming to screen -->
+        <svg viewBox="0 0 400 280" class="splash-svg">
+          <ellipse cx="200" cy="230" rx="150" ry="35" fill="none" stroke="rgba(16,185,129,0.3)" stroke-width="2" />
+          <path d="M110 230 L290 230" stroke="rgba(255,255,255,0.15)" stroke-width="4" />
+          
+          <!-- Batter Silhouette (Babar Azam Cover Drive Shot) -->
+          <g class="batter-silhouette">
+            <circle cx="150" cy="130" r="14" fill="#10b981" />
+            <path d="M150 144 L135 185 L120 230 M150 144 L165 190 L180 230" stroke="#f8fafc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M150 150 L185 165 L220 150" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" />
+            <path d="M210 145 L260 120" stroke="#f59e0b" stroke-width="9" stroke-linecap="round" class="bat-swing" />
+          </g>
+
+          <!-- Flying Cricket Ball Zooming to Screen -->
+          <circle cx="250" cy="125" r="9" class="flying-cricket-ball" />
+        </svg>
+
+        <!-- Glass Crack Screen Impact Overlay -->
+        <div class="glass-crack-effect" id="glass-crack-effect">
+          <div class="crack-line c1"></div>
+          <div class="crack-line c2"></div>
+          <div class="crack-line c3"></div>
+          <div class="crack-line c4"></div>
+          <div class="impact-burst">⚡ SCREEN IMPACT</div>
+        </div>
+      </div>
+
+      <h1 class="splash-title">BABAR AZAM <span>SHOT OF THE DAY</span></h1>
+      <p class="splash-subtitle">Cricket Tournament Scorer & Management System</p>
+      
+      <button class="splash-skip-btn" onclick="app.closeSplashScreen()">
+        Enter Website <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
   <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.closeSidebar()"></div>
 
   <div id="app-container">

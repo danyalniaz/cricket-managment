@@ -95,6 +95,206 @@ body {
 }
 
 /* ==========================================================================
+   ANIMATED SPLASH INTRO SCREEN (BABAR AZAM SHOT IMPACT)
+   ========================================================================== */
+.splash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, #1e293b 0%, #060b14 100%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.splash-overlay.hidden {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+.splash-bg-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 70%);
+  border-radius: 50%;
+  animation: pulseGlow 3s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 0.9; }
+}
+
+.splash-container {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 500px;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.splash-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  animation: fadeInDown 0.6s ease;
+}
+
+.splash-batter-graphic {
+  position: relative;
+  width: 320px;
+  height: 220px;
+  margin: 0 auto;
+}
+
+.splash-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.flying-cricket-ball {
+  fill: #ef4444;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  transform-origin: 250px 125px;
+  animation: zoomBallToScreen 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes zoomBallToScreen {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(30px, -15px) scale(8);
+    opacity: 1;
+    filter: drop-shadow(0 0 15px #ef4444);
+  }
+  85% {
+    transform: translate(50px, -25px) scale(35);
+    opacity: 1;
+    filter: drop-shadow(0 0 40px #ef4444);
+  }
+  100% {
+    transform: translate(60px, -30px) scale(50);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 60px #ffffff);
+  }
+}
+
+/* Glass Crack Impact Effect */
+.glass-crack-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.2);
+  width: 240px;
+  height: 240px;
+  opacity: 0;
+  pointer-events: none;
+  animation: crackScreen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.25s forwards;
+}
+
+@keyframes crackScreen {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.crack-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+  height: 2px;
+  border-radius: 2px;
+}
+
+.crack-line.c1 { width: 120px; transform: rotate(25deg); }
+.crack-line.c2 { width: 140px; transform: rotate(115deg); }
+.crack-line.c3 { width: 110px; transform: rotate(210deg); }
+.crack-line.c4 { width: 130px; transform: rotate(305deg); }
+
+.impact-burst {
+  position: absolute;
+  top: 40%;
+  left: 30%;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 15px #ef4444;
+  letter-spacing: 0.1em;
+}
+
+.splash-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 0.5rem;
+  line-height: 1.2;
+}
+
+.splash-title span {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.splash-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.splash-skip-btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.splash-skip-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+/* ==========================================================================
    SIDEBAR NAVIGATION
    ========================================================================== */
 sidebar {
