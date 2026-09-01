@@ -249,6 +249,10 @@ class CricketApp {
   refreshAdminPreview() {
     const iframe = document.getElementById('admin-preview-iframe');
     if (iframe) {
+      iframe.onload = () => {
+        // Run live preview sync once the iframe finishes loading
+        this.adminLivePreview();
+      };
       iframe.src = 'index.html?' + Date.now();
     }
   }
@@ -266,7 +270,7 @@ class CricketApp {
     syncPairs.forEach(([cId, hId]) => {
       const c = document.getElementById(cId);
       const h = document.getElementById(hId);
-      if (c && h) h.value = c.value;
+      if (c && h && document.activeElement !== h) h.value = c.value;
     });
 
     // Inject CSS directly into iframe for live preview
@@ -274,12 +278,8 @@ class CricketApp {
     if (iframe && iframe.contentDocument) {
       try {
         const iDoc = iframe.contentDocument;
-        let styleEl = iDoc.getElementById('admin-live-style');
-        if (!styleEl) {
-          styleEl = iDoc.createElement('style');
-          styleEl.id = 'admin-live-style';
-          iDoc.head.appendChild(styleEl);
-        }
+        
+        // Read current values from editor
         const primary = document.getElementById('adm-primary-color')?.value || '#10b981';
         const accent  = document.getElementById('adm-accent-color')?.value  || '#3b82f6';
         const bg      = document.getElementById('adm-bg-color')?.value       || '#0b1120';
@@ -291,21 +291,29 @@ class CricketApp {
         const sidebarWidth = document.getElementById('adm-sidebar-width')?.value || '260';
         const neonIntensity = document.getElementById('adm-neon-intensity')?.value || '60';
 
-        styleEl.textContent = `:root {
-          --primary: ${primary};
-          --accent: ${accent};
-          --bg-main: ${bg};
-          --bg-sidebar: ${sidebar};
-          --bg-card: ${card};
-          --danger: ${danger};
-          --radius-lg: ${borderRadius}px;
-          --radius-md: ${Math.max(4, borderRadius - 4)}px;
-          --sidebar-width: ${sidebarWidth}px;
-          --neon-opacity: ${neonIntensity / 100};
-        }
-        body { font-family: ${font}; }`;
+        // Apply directly to iframe root (overriding inline styles from iframe's own init)
+        const iRoot = iDoc.documentElement;
+        iRoot.style.setProperty('--primary', primary);
+        iRoot.style.setProperty('--primary-hover', this.darken(primary, 10));
+        iRoot.style.setProperty('--accent', accent);
+        iRoot.style.setProperty('--bg-main', bg);
+        iRoot.style.setProperty('--bg-sidebar', sidebar);
+        iRoot.style.setProperty('--bg-card', card);
+        iRoot.style.setProperty('--danger', danger);
+        iRoot.style.setProperty('--radius-lg', borderRadius + 'px');
+        iRoot.style.setProperty('--radius-md', Math.max(4, borderRadius - 4) + 'px');
+        iRoot.style.setProperty('--sidebar-width', sidebarWidth + 'px');
+        iRoot.style.setProperty('--neon-opacity', neonIntensity / 100);
+        iDoc.body.style.fontFamily = font;
 
-        // Hide/Show neon borders dynamically in preview
+        // Hide/Show neon borders dynamically using a style tag
+        let styleEl = iDoc.getElementById('admin-live-style');
+        if (!styleEl) {
+          styleEl = iDoc.createElement('style');
+          styleEl.id = 'admin-live-style';
+          iDoc.head.appendChild(styleEl);
+        }
+        styleEl.textContent = '';
         const borderStyle = document.getElementById('adm-card-border')?.value || 'neon';
         if (borderStyle === 'none') {
           styleEl.textContent += ` .card { border: none !important; } .card::before { display: none !important; }`;
